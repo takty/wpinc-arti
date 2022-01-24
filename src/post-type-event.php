@@ -2,247 +2,365 @@
 /**
  * Event Post Type
  *
+ * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2021-03-26
+ * @version 2022-01-23
  */
 
-namespace st\event;
+namespace wpinc\post\event;
 
 require_once __DIR__ . '/post-type.php';
-require_once __DIR__ . '/../admin/list-table-column.php';
-require_once __DIR__ . '/../admin/misc.php';
-require_once __DIR__ . '/../metabox/duration-picker.php';
-require_once __DIR__ . '/../util/date.php';
+require_once __DIR__ . '/list-table-column.php';
+require_once __DIR__ . '/duration-picker.php';
 
+const PMK_DATE      = '_date';
+const PMK_DATE_FROM = '_date_from';
+const PMK_DATE_TO   = '_date_to';
 
-const PMK_DATE_BGN = '_date_bgn';
-const PMK_DATE_END = '_date_end';
-
-
-function register_post_type( $post_type = 'event', $slug = false, $opts = array(), $labels = array(), $args = array(), ?callable $home_url = null ) {
-	$opts = array_merge(
-		array(
-			'is_autofill_enabled'   => false,
-			'order_by_date'         => 'begin',
-			'date_replaced_by_date' => false,
-		),
-		$opts
+/**
+ * Registers event-like post type.
+ *
+ * @param array $args Arguments.
+ */
+function register_post_type( array $args = array() ): void {
+	$def_opts = array(
+		'post_type'         => 'event',
+		'slug'              => '',
+		'do_autofill'       => false,
+		'order_by'          => 'from',
+		'replace_date_with' => 'from',
 	);
-	$labels = array_merge(
-		array(
-			'name'               => 'Events',
-			'period_label'       => 'Date',
-			'period_begin_label' => 'Begin',
-			'period_end_label'   => 'End',
-			'year_label'         => '',
-		),
-		$labels
+
+	$args += $def_opts;
+	$args += array(
+		'public'        => true,
+		'has_archive'   => true,
+		'rewrite'       => false,
+		'menu_position' => 5,
+		'menu_icon'     => 'dashicons-calendar-alt',
+		'supports'      => array( 'title', 'editor', 'revisions', 'thumbnail' ),
+		'labels'        => array(),
 	);
-	$args = array_merge(
-		array(
-			'labels'        => $labels,
-			'public'        => true,
-			'show_ui'       => true,
-			'menu_position' => 5,
-			'menu_icon'     => 'dashicons-calendar-alt',
-			'supports'      => [ 'title', 'editor', 'revisions', 'thumbnail' ],
-			'has_archive'   => true,
-			'rewrite'       => false,
-		),
-		$args
+
+	$args['labels'] += array(
+		'name'      => 'Events',
+		'date'      => 'Date',
+		'date_from' => 'From',
+		'date_to'   => 'To',
 	);
-	if ( $slug === false ) {
-		$slug = $post_type;
+
+	if ( empty( $args['slug'] ) ) {
+		$args['slug'] = $args['post_type'];
 	}
-	\register_post_type( $post_type, $args );
-	\st\post_type\add_rewrite_rules( $post_type, $slug, 'date', false, $home_url );
+	\register_post_type( $args['post_type'], array_diff_key( $args, $def_opts ) );
+	\wpinc\post\add_rewrite_rules( $args['post_type'], $args['slug'], 'date', false );
 
-	$pmk_o = ( 'begin' === $opts['order_by_date'] ) ? PMK_DATE_BGN : ( ( 'end' === $opts['order_by_date'] ) ? PMK_DATE_END : false );
-	if ( $pmk_o ) {
-		\st\post_type\make_custom_date_sortable( $post_type, 'date', $pmk_o );
-		\st\post_type\enable_custom_date_adjacent_post_link( $post_type, $pmk_o );
+	_set_custom_date_order( $args['order_by'] );
+	_replace_date( $args['replace_date_with'] );
+
+	if ( is_admin() ) {
+		_set_duration_picker( $args );
+	} else {
+		add_filter(
+			'body_class',
+			function ( array $classes ) use ( $post_type ) {
+				return _cb_body_class( $classes, $post_type );
+			}
+		);
 	}
+}
 
-	$pmk_d = ( 'begin' === $opts['date_replaced_by_date'] ) ? PMK_DATE_BGN : ( ( 'end' === $opts['date_replaced_by_date'] ) ? PMK_DATE_END : false );
-	if ( $pmk_d ) {
+/**
+ * Sets custom date order.
+ *
+ * @access private
+ *
+ * @param string $type Type.
+ */
+function _set_custom_date_order( string $type ): void {
+	$key = '';
+	if ( 'from' === $type ) {
+		$key = PMK_DATE_FROM;
+	}
+	if ( 'to' === $type ) {
+		$key = PMK_DATE_TO;
+	}
+	if ( $key ) {
+		\wpinc\post\make_custom_date_sortable( $post_type, 'date', $key );
+		\wpinc\post\enable_custom_date_adjacent_post_link( $post_type, $key );
+	}
+}
+
+/**
+ * Adds filter for replacing date.
+ *
+ * @access private
+ *
+ * @param string $type Type.
+ */
+function _replace_date( string $type ): void {
+	$key = '';
+	if ( 'from' === $type ) {
+		$key = PMK_DATE_FROM;
+	}
+	if ( 'to' === $type ) {
+		$key = PMK_DATE_TO;
+	}
+	if ( $key ) {
 		add_filter(
 			'get_the_date',
-			function ( $the_date, $d, $post ) use ( $post_type, $pmk_d ) {
+			function ( $the_date, $d, $post ) use ( $post_type, $key ) {
 				if ( $post->post_type !== $post_type ) {
 					return $the_date;
 				}
-				$date = get_post_meta( $post->ID, $pmk_d, true );
+				$date = get_post_meta( $post->ID, $key, true );
 				return mysql2date( empty( $d ) ? get_option( 'date_format' ) : $d, $date );
 			},
 			10,
 			3
 		);
 	}
-	if ( is_admin() ) {
-		_set_duration_picker( $post_type, $opts, $labels );
-	}
-
-	add_filter( 'body_class', function ( array $classes ) use ( $post_type ) {
-		if ( is_singular( $post_type ) ) {
-			global $wp_query;
-			$post      = $wp_query->get_queried_object();
-			$classes[] = \st\event\_get_duration_state( $post->ID );
-		}
-		return $classes;
-	} );
 }
 
-function _set_duration_picker( $post_type, $opts, $labels ) {
-	if ( \st\is_post_type( $post_type ) ) {
-		add_action(
-			'admin_print_scripts',
-			function () {
-				\st\DurationPicker::enqueue_script();
-			}
-		);
+/**
+ * Sets duration picker.
+ *
+ * @param array $args Arguments.
+ */
+function _set_duration_picker( array $args ): void {
+	if ( ! _is_post_type( $args['post_type'] ) ) {
+		return;
 	}
+	$dp_args = array(
+		'key'         => PMK_DATE,
+		'do_autofill' => $args['do_autofill'],
+		'label_from'  => $args['labels']['date_from'],
+		'label_to'    => $args['labels']['date_to'],
+	);
+	\wpinc\post\duration_picker\initialize( $args );
 	add_action(
 		'admin_menu',
-		function () use ( $post_type, $labels, $opts ) {
-			\st\DurationPicker::set_year_label( $labels['year_label'] );
-			$dp = \st\DurationPicker::get_instance( '' );
-			$dp->set_duration_labels( $labels['period_begin_label'], $labels['period_end_label'] );
-			$dp->set_autofill_enabled( $opts['is_autofill_enabled'] );
-			$dp->add_meta_box( $labels['period_label'], $post_type, 'side' );
+		function () use ( $args, $dp_args ) {
+			\wpinc\post\duration_picker\add_meta_box( $dp_args, $args['labels']['date'], $args['post_type'], 'side' );
 		}
 	);
 	add_action(
 		'save_post',
-		function ( $post_id ) {
-			$dp = \st\DurationPicker::get_instance( '' );
-			$dp->save_meta_box( $post_id );
+		function ( $post_id ) use ( $dp_args ) {
+			\wpinc\post\duration_picker\save_meta_box( $dp_args, $post_id );
 		}
 	);
 }
 
-function set_admin_columns( $post_type, $add_cat, $add_tag, $tax ) {
-	add_action(
-		'wp_loaded',
-		function () use ( $post_type, $add_cat, $add_tag, $tax ) {
-			$cs = \st\list_table_column\insert_default_columns();
-			$cs = \st\list_table_column\insert_common_taxonomy_columns( $post_type, $add_cat, $add_tag, -1, $cs );
-			$cs = insert_date_columns( $post_type, -1, $cs );
-			array_splice( $cs, -1, 0, array( array( 'name' => $tax, 'width' => '10%' ) ) );
-			$scs = insert_date_sortable_columns();
-			\st\list_table_column\set_admin_columns( $post_type, $cs, $scs );
-		}
-	);
+/**
+ * Checks current post type.
+ *
+ * @param string $post_type Post type.
+ * @return bool True on the current post type is $post_type.
+ */
+function _is_post_type( string $post_type ): bool {
+	$post    = $_GET['post'] ?? null;  // phpcs:ignore
+	$post_id = $_POST['post_ID'] ?? null;  // phpcs:ignore
+	if ( $post || $post_id ) {
+		$post_id = $post ? $post : $post_id;
+	}
+	$post_id = intval( $post_id );
+
+	$p = get_post( $post_id );
+	if ( $p ) {
+		$pt = $p->post_type;
+	} else {
+		$pt = $_GET['post_type'] ?? '';  // phpcs:ignore
+	}
+	return $post_type === $pt;
+}
+
+/**
+ * Callback function for 'body_class' filter.
+ *
+ * @param string[] $classes   Array of classes.
+ * @param string   $post_type Post type.
+ * @return string[] Classes.
+ */
+function _cb_body_class( array $classes, string $post_type ): array {
+	if ( is_singular( $post_type ) ) {
+		global $wp_query;
+		$post      = $wp_query->get_queried_object();
+		$classes[] = _get_duration_state( $post->ID );
+	}
+	return $classes;
 }
 
 
 // -----------------------------------------------------------------------------
 
 
-function insert_date_columns( $post_type, $pos = false, $cs = array() ) {
-	$pto       = get_post_type_object( $post_type );
-	$label_bgn = isset( $pto->labels->period_begin_label ) ? $pto->labels->period_begin_label : __( 'Begin' );
-	$label_end = isset( $pto->labels->period_end_label ) ? $pto->labels->period_end_label : __( 'End' );
-	$ns = array(
-		array(
-			'name'  => PMK_DATE_BGN,
-			'label' => $label_bgn,
-			'width' => '15%',
-			'value' => '\st\event\_echo_date_val'
-		),
-		array(
-			'name'  => PMK_DATE_END,
-			'label' => $label_end,
-			'width' => '15%',
-			'value' => '\st\event\_echo_date_val'
-		),
+/**
+ * Sets columns of list table.
+ *
+ * @param string $post_type Post type.
+ * @param bool   $add_cat   Whether to add {$post_type}_category taxonomy.
+ * @param bool   $add_tag   Whether to add {$post_type}_tag taxonomy.
+ */
+function set_admin_column( string $post_type, bool $add_cat, bool $add_tag ): void {
+	add_action(
+		'wp_loaded',
+		function () use ( $post_type, $add_cat, $add_tag ) {
+			$cs = array( 'cb', 'title' );
+			if ( $add_cat ) {
+				$cs[] = array(
+					'taxonomy' => "{$post_type}_category",
+					'width'    => '10%',
+				);
+			}
+			if ( $add_tag ) {
+				$cs[] = array(
+					'taxonomy' => "{$post_type}_tag",
+					'width'    => '10%',
+				);
+			}
+			$cs   = add_duration_column( $post_type, $cs );
+			$cs[] = 'date';
+			set_list_table_column( $post_type, $cs );
+		}
 	);
-	if ( false === $pos ) {
-		return array_merge( $cs, $ns );
-	}
-	array_splice( $cs, $pos, 0, $ns );
+}
+
+/**
+ * Adds event duration columns.
+ *
+ * @param string $post_type Post type.
+ * @param array  $cs        Columns.
+ * @return array Added columns.
+ */
+function add_duration_column( string $post_type, array $cs = array() ): array {
+	$pto       = get_post_type_object( $post_type );
+	$label_bgn = $pto->labels->duration_from ?? __( 'From' );
+	$label_end = $pto->labels->duration_to ?? __( 'To' );
+
+	$cs[] = array(
+		'meta'     => PMK_DATE_FROM,
+		'label'    => $label_bgn,
+		'width'    => '15%',
+		'filter'   => '\wpinc\post\event\_filter_date_val',
+		'sortable' => true,
+	);
+	$cs[] = array(
+		'meta'     => PMK_DATE_TO,
+		'label'    => $label_end,
+		'width'    => '15%',
+		'filter'   => '\wpinc\post\event\_filter_date_val',
+		'sortable' => true,
+	);
 	return $cs;
 }
 
-function _echo_date_val( $val ) {
+/**
+ * Filter of duration columns.
+ *
+ * @param string $val Value.
+ */
+function _filter_date_val( string $val ): string {
 	if ( empty( $val ) ) {
-		return;
+		return '';
 	}
-	echo esc_attr( date( get_option( 'date_format' ), strtotime( $val ) ) );
-}
-
-function insert_date_sortable_columns( $pos = false, $scs = array() ) {
-	$ns = array( PMK_DATE_BGN, PMK_DATE_END );
-	if ( false === $pos ) {
-		return array_merge( $scs, $ns );
-	}
-	array_splice( $scs, $pos, 0, $ns );
-	return $scs;
+	return esc_attr( gmdate( get_option( 'date_format' ), strtotime( $val ) ) );
 }
 
 
 // -----------------------------------------------------------------------------
 
 
-function format_duration( $post_id, array $formats, string $date_format, bool $is_translated ) {
-	$dd   = _get_duration_dates( $post_id );
-	$df   = implode( "\t", str_split( $date_format, 1 ) );
-	$type = 'one';
+/**
+ * Formats duration date.
+ *
+ * @param int    $post_id       Post ID.
+ * @param array  $formats       Array of duration formats.
+ * @param string $date_format   Date format.
+ * @param bool   $do_translate  Whether to translate.
+ * @return string Formatted duration.
+ */
+function format_duration( int $post_id, array $formats, string $date_format, bool $do_translate ): string {
+	$dd = _get_duration_dates( $post_id );
+	$df = implode( "\t", str_split( $date_format, 1 ) );
 
-	if ( $dd['bgn_ns'] && $dd['end_ns'] ) {
-		if ( $dd['bgn_ns'][0] !== $dd['end_ns'][0] ) {
+	if ( $dd['from_ns'] && $dd['to_ns'] ) {
+		$from_fd = _split_date_string( $dd['from_raw'], $df, $do_translate );
+		$to_fd   = _split_date_string( $dd['to_raw'], $df, $do_translate );
+
+		$type = 'one';
+		if ( $dd['from_ns'][0] !== $dd['to_ns'][0] ) {
 			$type = 'ymd';
-		} elseif ( $dd['bgn_ns'][1] !== $dd['end_ns'][1] ) {
+		} elseif ( $dd['from_ns'][1] !== $dd['to_ns'][1] ) {
 			$type = 'md';
-		} elseif ( $dd['bgn_ns'][2] !== $dd['end_ns'][2] ) {
+		} elseif ( $dd['from_ns'][2] !== $dd['to_ns'][2] ) {
 			$type = 'd';
 		}
-		$bgn_fd = $dd['bgn_raw'] ? explode( "\t", mysql2date( $df, $dd['bgn_raw'], $is_translated ) ) : array();
-		$bgn_fd = array_pad( $bgn_fd, 4, '' );
-		$end_fd = $dd['end_raw'] ? explode( "\t", mysql2date( $df, $dd['end_raw'], $is_translated ) ) : array();
-		$end_fd = array_pad( $end_fd, 4, '' );
+		return sprintf( $formats[ $type ], ...$from_fd, ...$to_fd );
+	} elseif ( $dd['from_ns'] || $dd['to_ns'] ) {
+		$fd = _split_date_string( $dd['from_raw'] ? $dd['from_raw'] : $dd['to_raw'], $df, $do_translate );
 
-		return sprintf( $formats[ $type ], ...$bgn_fd, ...$end_fd );
-	} elseif ( $dd['bgn_ns'] || $dd['end_ns'] ) {
-		$d  = $dd['bgn_raw'] ? $dd['bgn_raw'] : $dd['end_raw'];
-		$fd = $d ? explode( "\t", mysql2date( $df, $d, $is_translated ) ) : array();
-		$fd = array_pad( $fd, 4, '' );
-		return sprintf( $formats[ $type ], ...$fd );
+		return sprintf( $formats['one'], ...$fd );
 	}
 	return '';
 }
 
-function _get_duration_dates( $post_id ) {
-	$bgn_raw = get_post_meta( $post_id, PMK_DATE_BGN, true );
-	$end_raw = get_post_meta( $post_id, PMK_DATE_END, true );
-	$bgn_ns  = empty( $bgn_raw ) ? null : explode( '-', $bgn_raw );
-	$end_ns  = empty( $end_raw ) ? null : explode( '-', $end_raw );
-	return compact( 'bgn_raw', 'end_raw', 'bgn_ns', 'end_ns' );
+/**
+ * Splits date string.
+ *
+ * @param string $str          String.
+ * @param string $df           Date format where each components are separated '\t'.
+ * @param bool   $do_translate Whether to translate.
+ * @return string[] Date components.
+ */
+function _split_date_string( string $str, string $df, bool $do_translate ): array {
+	$fd = $str ? explode( "\t", mysql2date( $df, $str, $do_translate ) ) : array();
+	return array_pad( $fd, 4, '' );
 }
 
-function _get_duration_state( $post_id ) {
-	$bgn_raw = get_post_meta( $post_id, PMK_DATE_BGN, true );
-	$end_raw = get_post_meta( $post_id, PMK_DATE_END, true );
-	$bgn_ns  = empty( $bgn_raw ) ? null : explode( '-', $bgn_raw );
-	$end_ns  = empty( $end_raw ) ? null : explode( '-', $end_raw );
-	$state   = '';
+/**
+ * Retrieves duration date.
+ *
+ * @param int $post_id Post ID.
+ * @return array Array of duration dates.
+ */
+function _get_duration_dates( int $post_id ): array {
+	$from_raw = get_post_meta( $post_id, PMK_DATE_FROM, true );
+	$to_raw   = get_post_meta( $post_id, PMK_DATE_TO, true );
+	$from_ns  = empty( $from_raw ) ? null : explode( '-', $from_raw );
+	$to_ns    = empty( $to_raw ) ? null : explode( '-', $to_raw );
+	return compact( 'from_raw', 'to_raw', 'from_ns', 'to_ns' );
+}
 
-	if ( $bgn_ns ) {
-		$t     = \st\create_date_array_of_today();
-		$t_bgn = \st\compare_date_arrays( $t, $bgn_ns );
+/**
+ * Retrieves duration state.
+ *
+ * @param int $post_id Post ID.
+ * @return string      Duration state.
+ */
+function _get_duration_state( int $post_id ): string {
+	$from_raw = get_post_meta( $post_id, PMK_DATE_FROM, true );
+	$to_raw   = get_post_meta( $post_id, PMK_DATE_TO, true );
+	$from_ns  = empty( $from_raw ) ? null : explode( '-', $from_raw );
+	$to_ns    = empty( $to_raw ) ? null : explode( '-', $to_raw );
+	$state    = '';
 
-		if ( $end_ns ) {
-			$t_end = \st\compare_date_arrays( $t, $end_ns );
-			$state = 'ongoing';
-			if ( '<' === $t_bgn ) {
+	if ( $from_ns ) {
+		$t      = \wpinc\post\create_date_array_of_today();
+		$t_from = \wpinc\post\compare_date_arrays( $t, $from_ns );
+
+		$state = 'ongoing';
+		if ( $to_ns ) {
+			$t_end = \wpinc\post\compare_date_arrays( $t, $to_ns );
+			if ( '<' === $t_from ) {
 				$state = 'upcoming';
 			} elseif ( '>' === $t_end ) {
 				$state = 'finished';
 			}
 		} else {
-			$state = 'ongoing';
-			if ( '<' === $t_bgn ) {
+			if ( '<' === $t_from ) {
 				$state = 'upcoming';
-			} elseif ( '>' === $t_bgn ) {
+			} elseif ( '>' === $t_from ) {
 				$state = 'finished';
 			}
 		}

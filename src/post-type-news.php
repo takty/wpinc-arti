@@ -2,46 +2,68 @@
 /**
  * News Post Type
  *
+ * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2021-03-23
+ * @version 2022-01-23
  */
 
-namespace st\news;
+namespace wpinc\post\news;
 
 require_once __DIR__ . '/post-type.php';
-require_once __DIR__ . '/../admin/list-table-column.php';
+require_once __DIR__ . '/list-table-column.php';
 
-
-function register_post_type( $post_type = 'news', $slug = false, $labels = array(), $args = array(), ?callable $home_url = null ) {
-	$labels = array_merge( array( 'name' => 'News' ), $labels );
-	$args   = array_merge(
-		array(
-			'labels'        => $labels,
-			'public'        => true,
-			'show_ui'       => true,
-			'menu_position' => 5,
-			'menu_icon'     => 'dashicons-admin-post',
-			'supports'      => array( 'title', 'editor', 'revisions', 'thumbnail' ),
-			'has_archive'   => true,
-			'rewrite'       => false,
-		),
-		$args
-	);
-	if ( false === $slug ) {
+/**
+ * Registers news-like post type.
+ *
+ * @param string $post_type Post type.
+ * @param string $slug      Parma struct base.
+ * @param array  $labels    Labels.
+ * @param array  $args      Arguments for register_post_type().
+ */
+function register_post_type( string $post_type = 'news', string $slug = '', array $labels = array(), array $args = array() ): void {
+	if ( empty( $slug ) ) {
 		$slug = $post_type;
 	}
+	$args += array(
+		'public'        => true,
+		'show_ui'       => true,
+		'menu_position' => 5,
+		'menu_icon'     => 'dashicons-admin-post',
+		'supports'      => array( 'title', 'editor', 'revisions', 'thumbnail' ),
+		'has_archive'   => true,
+		'rewrite'       => false,
+		'labels'        => $labels + array( 'name' => 'News' ),
+	);
 	\register_post_type( $post_type, $args );
-	\st\post_type\add_rewrite_rules( $post_type, $slug, 'date', false, $home_url );
+	\wpinc\post\add_rewrite_rules( $post_type, $slug, 'date', false );
 }
 
-function set_admin_columns( $post_type, $add_cat, $add_tag, $tax ) {
+/**
+ * Sets columns of list table.
+ *
+ * @param string $post_type Post type.
+ * @param bool   $add_cat   Whether to add {$post_type}_category taxonomy.
+ * @param bool   $add_tag   Whether to add {$post_type}_tag taxonomy.
+ */
+function set_admin_column( string $post_type, bool $add_cat, bool $add_tag ): void {
 	add_action(
 		'wp_loaded',
-		function () use ( $post_type, $add_cat, $add_tag, $tax )  {
-			$cs = \st\list_table_column\insert_default_columns();
-			$cs = \st\list_table_column\insert_common_taxonomy_columns( $post_type, $add_cat, $add_tag, -1, $cs );
-			array_splice( $cs, -1, 0, array( array( 'name' => $tax, 'width' => '10%' ) ) );
-			\st\list_table_column\set_admin_columns( $post_type, $cs );
+		function () use ( $post_type, $add_cat, $add_tag ) {
+			$cs = array( 'cb', 'title' );
+			if ( $add_cat ) {
+				$cs[] = array(
+					'taxonomy' => "{$post_type}_category",
+					'width'    => '10%',
+				);
+			}
+			if ( $add_tag ) {
+				$cs[] = array(
+					'taxonomy' => "{$post_type}_tag",
+					'width'    => '10%',
+				);
+			}
+			$cs[] = 'date';
+			set_list_table_column( $post_type, $cs );
 		}
 	);
 }

@@ -1,1 +1,1 @@
-# wpinc-arti
+# wpinc-post
