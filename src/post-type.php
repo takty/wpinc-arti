@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-23
+ * @version 2022-01-26
  */
 
 namespace wpinc\post;
@@ -160,9 +160,9 @@ function add_date_archive_link_filter( string $post_type, string $slug = '', str
 			if ( $post_type !== $url_post_type ) {
 				return $link_html;
 			}
+			global $wp_rewrite;
 			$url = str_replace( $wp_rewrite->root, '', $url );
 
-			global $wp_rewrite;
 			$new_url = remove_query_arg( 'post_type', $url );
 			$new_url = str_replace( "/$date_slug/", '/%struct%/', $new_url );
 			$new_url = str_replace( '%struct%', "$slug/$date_slug", $new_url );

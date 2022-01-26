@@ -4,13 +4,139 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-23
+ * @version 2022-01-25
  */
 
 namespace wpinc\post;
 
 /**
- * Set list table columns for admin.
+ * Enables to show page slug column.
+ * Call this in 'load-edit.php' or 'admin_init' action.
+ *
+ * @param int|null $pos (Optional) Column position.
+ */
+function enable_page_slug_column( ?int $pos = null ) {
+	global $typenow;
+	if ( 'page' !== $typenow ) {
+		return;
+	}
+	add_filter(
+		'manage_pages_columns',
+		function ( $cs ) use ( $pos ) {
+			if ( ! isset( $cs['slug'] ) ) {
+				if ( null === $pos ) {
+					$cs['slug'] = __( 'Slug', 'default' );
+				} else {
+					$i  = array( 'slug', __( 'Slug', 'default' ) );
+					$cs = _splice_key_value( $cs, $pos, 0, array( $i ) );
+				}
+			}
+			return $cs;
+		}
+	);
+	add_action(
+		'manage_pages_custom_column',
+		function ( $col_name, $post_id ) {
+			if ( 'slug' === $col_name ) {
+				$post = get_post( $post_id );
+				echo esc_attr( $post->post_name );
+			}
+		},
+		10,
+		2
+	);
+	add_action(
+		'admin_print_styles-edit.php',
+		function () {
+			echo '<style>.fixed .column-slug{width:20%;}</style>';
+		}
+	);
+}
+
+/**
+ * Enables to show menu order column.
+ * Call this in 'load-edit.php' or 'admin_init' action.
+ *
+ * @param int|null $pos (Optional) Column position.
+ */
+function enable_menu_order_column( ?int $pos = null ) {
+	global $typenow;
+	if ( ! post_type_supports( $typenow, 'page-attributes' ) ) {
+		return;
+	}
+	add_filter(
+		"manage_edit-{$typenow}_columns",
+		function ( $cs ) use ( $pos ) {
+			if ( ! isset( $cs['order'] ) ) {
+				if ( null === $pos ) {
+					$cs['order'] = __( 'Order', 'default' );
+				} else {
+					$i  = array( 'order', __( 'Order', 'default' ) );
+					$cs = _splice_key_value( $cs, $pos, 0, array( $i ) );
+				}
+			}
+			return $cs;
+		}
+	);
+	add_filter(
+		"manage_edit-{$typenow}_sortable_columns",
+		function ( $cs ) {
+			$cs['order'] = 'menu_order';
+			return $cs;
+		}
+	);
+	add_action(
+		"manage_{$typenow}_posts_custom_column",
+		function ( $col_name, $post_id ) {
+			if ( 'order' === $col_name ) {
+				$post = get_post( $post_id );
+				echo esc_attr( $post->menu_order );
+			}
+		},
+		10,
+		2
+	);
+	add_action(
+		'admin_print_styles-edit.php',
+		function () {
+			?>
+			<style>
+				.fixed .column-order{width:7%;}
+				@media screen and (max-width:1100px) {.fixed .column-order{width:12%;}}
+			</style>
+			<?php
+		}
+	);
+}
+
+/**
+ * Remove a portion of the array and replace it with key-value pairs.
+ *
+ * @param array    $array  The input array.
+ * @param int      $offset Offset.
+ * @param int|null $length Length.
+ * @param array    $pairs  Key-value pairs.
+ * @return array Array consisting of the extracted elements.
+ */
+function _splice_key_value( array $array, int $offset, ?int $length = null, array $pairs = array() ): array {
+	$kvs = array();
+	foreach ( $array as $key => $val ) {
+		$kvs[] = array( $key, $val );
+	}
+	array_splice( $kvs, $offset, $length, $pairs );
+	$new = array();
+	foreach ( $kvs as $kv ) {
+		$new[ $kv[0] ] = $kv[1];
+	}
+	return $new;
+}
+
+
+// -----------------------------------------------------------------------------
+
+
+/**
+ * Sets list table columns for admin.
  * Example,
  * array(
  *     'cb',
@@ -46,6 +172,7 @@ function set_list_table_column( string $post_type, array $columns ): void {
 		'author' => __( 'Author', 'default' ),
 		'date'   => __( 'Date', 'default' ),
 		'order'  => __( 'Order', 'default' ),
+		'slug'   => __( 'Slug', 'default' ),
 	);
 
 	$cols    = array();
@@ -134,7 +261,7 @@ function set_list_table_column( string $post_type, array $columns ): void {
 		);
 		add_filter(
 			'request',
-			function ( $vars ) use ( $meta_keys, $types ) {
+			function ( $vars ) use ( $types ) {
 				if ( ! isset( $vars['orderby'] ) ) {
 					return $vars;
 				}

@@ -7,7 +7,7 @@
  * @version 2022-01-17
  */
 
-namespace wpinc\meta;
+namespace wpinc\post;
 
 /**
  * Gets the URL of the file.

@@ -4,14 +4,15 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-23
+ * @version 2022-01-26
  */
 
 namespace wpinc\post\event;
 
+require_once __DIR__ . '/assets/date.php';
+require_once __DIR__ . '/assets/duration-picker.php';
 require_once __DIR__ . '/post-type.php';
 require_once __DIR__ . '/list-table-column.php';
-require_once __DIR__ . '/duration-picker.php';
 
 const PMK_DATE      = '_date';
 const PMK_DATE_FROM = '_date_from';
@@ -55,16 +56,16 @@ function register_post_type( array $args = array() ): void {
 	\register_post_type( $args['post_type'], array_diff_key( $args, $def_opts ) );
 	\wpinc\post\add_rewrite_rules( $args['post_type'], $args['slug'], 'date', false );
 
-	_set_custom_date_order( $args['order_by'] );
-	_replace_date( $args['replace_date_with'] );
+	_set_custom_date_order( $args['post_type'], $args['order_by'] );
+	_replace_date( $args['post_type'], $args['replace_date_with'] );
 
 	if ( is_admin() ) {
 		_set_duration_picker( $args );
 	} else {
 		add_filter(
 			'body_class',
-			function ( array $classes ) use ( $post_type ) {
-				return _cb_body_class( $classes, $post_type );
+			function ( array $classes ) use ( $args ) {
+				return _cb_body_class( $classes, $args['post_type'] );
 			}
 		);
 	}
@@ -75,9 +76,10 @@ function register_post_type( array $args = array() ): void {
  *
  * @access private
  *
- * @param string $type Type.
+ * @param string $post_type Post type.
+ * @param string $type      Type.
  */
-function _set_custom_date_order( string $type ): void {
+function _set_custom_date_order( string $post_type, string $type ): void {
 	$key = '';
 	if ( 'from' === $type ) {
 		$key = PMK_DATE_FROM;
@@ -96,9 +98,10 @@ function _set_custom_date_order( string $type ): void {
  *
  * @access private
  *
- * @param string $type Type.
+ * @param string $post_type Post type.
+ * @param string $type      Type.
  */
-function _replace_date( string $type ): void {
+function _replace_date( string $post_type, string $type ): void {
 	$key = '';
 	if ( 'from' === $type ) {
 		$key = PMK_DATE_FROM;

@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-17
+ * @version 2022-01-26
  */
 
 namespace wpinc\post;
@@ -101,7 +101,7 @@ function make_custom_date_sortable( string $post_type, string $slug, string $met
 function enable_custom_date_adjacent_post_link( string $post_type, string $meta_key ): void {
 	add_filter(
 		'get_next_post_join',
-		function ( $join, $in_same_term, $excluded_terms, $taxonomy, $post ) use ( $post_type, $meta_key ) {
+		function ( $join, $in_same_term, $excluded_terms, $tx, $post ) use ( $post_type, $meta_key ) {
 			global $wpdb;
 			if ( $post->post_type === $post_type ) {
 				$join .= " INNER JOIN $wpdb->postmeta ON ( p.ID = $wpdb->postmeta.post_id )";
@@ -113,7 +113,7 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 	);
 	add_filter(
 		'get_next_post_where',
-		function ( $where, $in_same_term, $excluded_terms, $taxonomy, $post ) use ( $post_type, $meta_key ) {
+		function ( $where, $in_same_term, $excluded_terms, $tx, $post ) use ( $post_type, $meta_key ) {
 			global $wpdb;
 			if ( $post->post_type === $post_type ) {
 				$m     = get_post_meta( $post->ID, $meta_key, true );
@@ -139,7 +139,7 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 
 	add_filter(
 		'get_previous_post_join',
-		function ( $join, $in_same_term, $excluded_terms, $taxonomy, $post ) use ( $post_type, $meta_key ) {
+		function ( $join, $in_same_term, $excluded_terms, $tx, $post ) use ( $post_type, $meta_key ) {
 			global $wpdb;
 			if ( $post->post_type === $post_type ) {
 				$join .= " INNER JOIN $wpdb->postmeta ON ( p.ID = $wpdb->postmeta.post_id )";
@@ -151,7 +151,7 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 	);
 	add_filter(
 		'get_previous_post_where',
-		function ( $where, $in_same_term, $excluded_terms, $taxonomy, $post ) use ( $post_type, $meta_key ) {
+		function ( $where, $in_same_term, $excluded_terms, $tx, $post ) use ( $post_type, $meta_key ) {
 			global $wpdb;
 			if ( $post->post_type === $post_type ) {
 				$m     = get_post_meta( $post->ID, $meta_key, true );

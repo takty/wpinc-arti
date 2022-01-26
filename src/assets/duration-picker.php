@@ -4,12 +4,12 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-24
+ * @version 2022-01-26
  */
 
 namespace wpinc\post\duration_picker;
 
-require_once __DIR__ . '/assets/asset-url.php';
+require_once __DIR__ . '/asset-url.php';
 
 /**
  * Initializes duration picker.
@@ -27,7 +27,7 @@ require_once __DIR__ . '/assets/asset-url.php';
  * }
  */
 function initialize( array $args = array() ) {
-	$url_to = untrailingslashit( $args['url_to'] ?? get_file_uri( __DIR__ ) );
+	$url_to = untrailingslashit( $args['url_to'] ?? \wpinc\post\get_file_uri( __DIR__ ) );
 	_register_script( $url_to );
 }
 
@@ -43,10 +43,10 @@ function _register_script( string $url_to ) {
 		add_action(
 			'admin_enqueue_scripts',
 			function () use ( $url_to ) {
-				wp_register_script( 'flatpickr', abs_url( $url_to . './assets/lib/flatpickr.min.js' ), array( 'flatpickr.l10n.ja' ), '1.0', false );
-				wp_register_script( 'flatpickr.l10n.ja', abs_url( $url_to . './assets/lib/flatpickr.l10n.ja.min.js' ), array(), '1.0', false );
-				wp_register_style( 'flatpickr', abs_url( $url_to . './assets/lib/flatpickr.min.css' ), array(), '1.0' );
-				wp_register_style( 'wpinc-post-duration-picker', abs_url( $url_to . './assets/duration-picker.min.css' ), array(), '1.0' );
+				wp_enqueue_script( 'flatpickr', \wpinc\post\abs_url( $url_to, './assets/lib/flatpickr.min.js' ), array( 'flatpickr.l10n.ja' ), '1.0', false );
+				wp_enqueue_script( 'flatpickr.l10n.ja', \wpinc\post\abs_url( $url_to, './assets/lib/flatpickr.l10n.ja.min.js' ), array(), '1.0', false );
+				wp_enqueue_style( 'flatpickr', \wpinc\post\abs_url( $url_to, './assets/lib/flatpickr.min.css' ), array(), '1.0' );
+				wp_enqueue_style( 'wpinc-post-duration-picker', \wpinc\post\abs_url( $url_to, './assets/lib/duration-picker.min.css' ), array(), '1.0' );
 			}
 		);
 	}
