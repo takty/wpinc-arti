@@ -4,7 +4,7 @@
  *
  * @package Sample
  * @author Takuto Yanagida
- * @version 2022-01-26
+ * @version 2022-01-27
  */
 
 namespace sample;
@@ -373,4 +373,13 @@ function get_query_arg( string $key, string $url ): string {
  */
 function post_type_title( string $prefix = '', bool $display = true ) {
 	return \wpinc\post\post_type_title( $prefix, $display );
+}
+
+/**
+ * Enables simple default slugs.
+ *
+ * @param string|string[] $post_type_s Post types.
+ */
+function enable_simple_default_slug( $post_type_s = array() ) {
+	\wpinc\post\enable_simple_default_slug( $post_type_s );
 }
