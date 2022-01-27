@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-17
+ * @version 2022-01-27
  */
 
 namespace wpinc\post;
@@ -28,4 +28,27 @@ function post_type_title( string $prefix = '', bool $display = true ) {
 	} else {
 		return $prefix . $title;
 	}
+}
+
+/**
+ * Enables simple default slugs.
+ *
+ * @param string|string[] $post_type_s Post types.
+ */
+function enable_simple_default_slug( $post_type_s = array() ) {
+	$pts = is_array( $post_type_s ) ? $post_type_s : array( $post_type_s );
+	add_filter(
+		'wp_unique_post_slug',
+		function ( $slug, $post_ID, $post_status, $post_type ) use ( $pts ) {
+			$post = get_post( $post_ID );
+			if ( '0000-00-00 00:00:00' === $post->post_date_gmt ) {
+				if ( empty( $pts ) || in_array( $post_type, $pts, true ) ) {
+					$slug = $post_ID;
+				}
+			}
+			return $slug;
+		},
+		10,
+		4
+	);
 }
