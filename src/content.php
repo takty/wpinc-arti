@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-26
+ * @version 2022-01-29
  */
 
 namespace wpinc\post;
@@ -33,9 +33,15 @@ function enable_custom_excerpt( int $length = 220, string $more = '...' ) {
 	add_filter(
 		'wp_trim_words',
 		function ( string $text, int $num_words, string $more, string $original_text ) {
-			$orig = remove_continuous_spaces( $original_text );
+			$allowed_html = array(
+				'sub' => array(),
+				'sup' => array(),
+			);
+
+			$orig = wp_kses( $original_text, $allowed_html );
+			$orig = mb_trim( remove_continuous_spaces( $orig ) );
 			$text = mb_trim( mb_strimwidth( $orig, 0, $num_words ) );
-			if ( ! empty( $text ) && $original_text !== $text ) {
+			if ( ! empty( $text ) && $orig !== $text ) {
 				$text = $text . $more;
 			}
 			return $text;
