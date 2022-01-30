@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-26
+ * @version 2022-01-30
  */
 
 namespace wpinc\post\duration_picker;
@@ -193,6 +193,7 @@ function _cb_output_html_template_admin( array $args, \WP_Post $post ): void {
 	$it = get_data( $args, $post->ID );
 
 	$key = $args['key'];
+	$loc = strtolower( str_replace( '_', '-', $args['locale'] ) );
 	?>
 	<div>
 		<table class="wpinc-post-date-picker">
@@ -212,8 +213,8 @@ function _cb_output_html_template_admin( array $args, \WP_Post $post ): void {
 			</tr>
 		</table>
 		<script>
-			flatpickr('#<?php echo esc_html( "{$key}_from_fp" ); ?>', { locale: '<?php echo esc_html( $args['locale'] ); ?>', wrap: true });
-			flatpickr('#<?php echo esc_html( "{$key}_to_fp" ); ?>', { locale: '<?php echo esc_html( $args['locale'] ); ?>', wrap: true });
+			flatpickr('#<?php echo esc_html( "{$key}_from_fp" ); ?>', { locale: '<?php echo esc_html( $loc ); ?>', wrap: true });
+			flatpickr('#<?php echo esc_html( "{$key}_to_fp" ); ?>', { locale: '<?php echo esc_html( $loc ); ?>', wrap: true });
 		</script>
 	</div>
 	<?php
