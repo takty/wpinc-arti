@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-26
+ * @version 2022-02-01
  */
 
 namespace wpinc\post\event;
@@ -140,6 +140,9 @@ function _set_duration_picker( array $args ): void {
 		'label_from'  => $args['labels']['date_from'],
 		'label_to'    => $args['labels']['date_to'],
 	);
+	if ( isset( $args['url_to'] ) ) {
+		$args['url_to'] = untrailingslashit( $args['url_to'] ) . '/assets';
+	}
 	\wpinc\post\duration_picker\initialize( $args );
 	add_action(
 		'admin_menu',
