@@ -46,7 +46,7 @@ function _register_script( string $url_to ) {
 				wp_enqueue_script( 'flatpickr', \wpinc\post\abs_url( $url_to, './lib/flatpickr.min.js' ), array( 'flatpickr.l10n.ja' ), '1.0', false );
 				wp_enqueue_script( 'flatpickr.l10n.ja', \wpinc\post\abs_url( $url_to, './lib/flatpickr.l10n.ja.min.js' ), array(), '1.0', false );
 				wp_enqueue_style( 'flatpickr', \wpinc\post\abs_url( $url_to, './lib/flatpickr.min.css' ), array(), '1.0' );
-				wp_enqueue_style( 'wpinc-post-duration-picker', \wpinc\post\abs_url( $url_to, './lib/duration-picker.min.css' ), array(), '1.0' );
+				wp_enqueue_style( 'wpinc-post-duration-picker', \wpinc\post\abs_url( $url_to, './css/duration-picker.min.css' ), array(), '1.0' );
 			}
 		);
 	}
@@ -126,7 +126,7 @@ function _save_data( array $args, int $post_id, string $from, string $to ): void
 	if ( $to ) {
 		update_post_meta( $post_id, "{$args['key']}_to", $to );
 	} else {
-		delete_post_meta( $post_id, "{$args['key']}_to", $to );
+		delete_post_meta( $post_id, "{$args['key']}_to" );
 	}
 }
 
@@ -149,7 +149,7 @@ function add_meta_box( array $args, string $title, ?string $screen, string $cont
 		"{$args['key']}_mb",
 		$title,
 		function ( \WP_Post $post ) use ( $args ) {
-			\wpinc\post\duration_picker\_cb_output_html_template_admin( $args, $post );
+			_cb_output_html( $args, $post );
 		},
 		$screen,
 		$context,
@@ -171,8 +171,8 @@ function save_meta_box( array $args, int $post_id ): void {
 	if ( ! wp_verify_nonce( sanitize_key( $_POST[ "{$args['key']}_nonce" ] ), $args['key'] ) ) {
 		return;
 	}
-	$from = sanitize_text_field( wp_unslash( $_POST[ "{$args['key']}_from" ] ?? false ) );
-	$to   = sanitize_text_field( wp_unslash( $_POST[ "{$args['key']}_to" ] ?? false ) );
+	$from = sanitize_text_field( wp_unslash( $_POST[ "{$args['key']}_from" ] ?? '' ) );
+	$to   = sanitize_text_field( wp_unslash( $_POST[ "{$args['key']}_to" ] ?? '' ) );
 	_save_data( $args, $post_id, $from, $to );
 }
 
@@ -188,15 +188,15 @@ function save_meta_box( array $args, int $post_id ): void {
  * @param array    $args Array of arguments.
  * @param \WP_Post $post Current post.
  */
-function _cb_output_html_template_admin( array $args, \WP_Post $post ): void {
+function _cb_output_html( array $args, \WP_Post $post ): void {
 	wp_nonce_field( $args['key'], "{$args['key']}_nonce" );
 	$it = get_data( $args, $post->ID );
 
 	$key = $args['key'];
 	$loc = strtolower( str_replace( '_', '-', $args['locale'] ) );
 	?>
-	<div>
-		<table class="wpinc-post-date-picker">
+	<div class="wpinc-post-duration-picker">
+		<table>
 			<tr>
 				<td><?php echo esc_html( $args['label_from'] ); ?>: </td>
 				<td class="flatpickr input-group" id="<?php echo esc_attr( "{$key}_from_fp" ); ?>">
