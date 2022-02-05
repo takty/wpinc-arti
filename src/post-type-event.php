@@ -4,13 +4,12 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-01
+ * @version 2022-02-05
  */
 
 namespace wpinc\post\event;
 
 require_once __DIR__ . '/assets/date.php';
-require_once __DIR__ . '/assets/duration-picker.php';
 require_once __DIR__ . '/post-type.php';
 require_once __DIR__ . '/list-table-column.php';
 
@@ -143,17 +142,17 @@ function _set_duration_picker( array $args ): void {
 	if ( isset( $args['url_to'] ) ) {
 		$args['url_to'] = untrailingslashit( $args['url_to'] ) . '/assets';
 	}
-	\wpinc\post\duration_picker\initialize( $args );
+	\wpinc\dia\duration_picker\initialize( $args );
 	add_action(
 		'admin_menu',
 		function () use ( $args, $dp_args ) {
-			\wpinc\post\duration_picker\add_meta_box( $dp_args, $args['labels']['date'], $args['post_type'], 'side' );
+			\wpinc\dia\duration_picker\add_meta_box( $dp_args, $args['labels']['date'], $args['post_type'], 'side' );
 		}
 	);
 	add_action(
 		'save_post',
 		function ( $post_id ) use ( $dp_args ) {
-			\wpinc\post\duration_picker\save_meta_box( $dp_args, $post_id );
+			\wpinc\dia\duration_picker\save_meta_box( $dp_args, $post_id );
 		}
 	);
 }

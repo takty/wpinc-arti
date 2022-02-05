@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-26
+ * @version 2022-02-03
  */
 
 namespace wpinc\post;
@@ -50,8 +50,8 @@ function mb_trim( string $str ): string {
  *
  *     @type string   'word'   Segment type: 'ja' or 'none'. Default 'none'.
  *     @type string   'line'   Line wrapping type: 'raw', 'br', 'span', 'div', or 'array'. Default 'div'.
- *     @type callable 'filter' Filter function.
- *     @type bool     'small'  Whether to handle 'small' elements.
+ *     @type callable 'filter' Filter function. Default 'esc_html'.
+ *     @type bool     'small'  Whether to handle 'small' elements. Default true.
  * }
  * @return string|array Separated text or an array of separation.
  */

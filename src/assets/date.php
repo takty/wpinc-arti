@@ -4,30 +4,29 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-17
+ * @version 2022-02-03
  */
 
 namespace wpinc\post;
 
-const DATE_STRING_FORMAT = 'Y-m-d';
-
 /**
- * Makes date string of today.
+ * Creates date string of today.
  *
- * @param int $offset_year  Year offset.
- * @param int $offset_month Month offset.
- * @param int $offset_day   Day offset.
+ * @param int    $offset_year  Offset of year. Default 0.
+ * @param int    $offset_month Offset of month. Default 0.
+ * @param int    $offset_day   Offset of day. Default 0.
+ * @param string $format       Format of date string. Default 'Y-m-d'.
  * @return string Date string.
  */
-function create_date_string_of_today( int $offset_year = 0, int $offset_month = 0, int $offset_day = 0 ): string {
+function create_date_string_of_today( int $offset_year = 0, int $offset_month = 0, int $offset_day = 0, string $format = 'Y-m-d' ): string {
 	if ( 0 === $offset_year && 0 === $offset_month && 0 === $offset_day ) {
-		return date_i18n( DATE_STRING_FORMAT );
+		return date_i18n( $format );
 	}
-	$y  = date_i18n( 'Y' ) + $offset_year;
-	$m  = date_i18n( 'm' ) + $offset_month;
-	$d  = date_i18n( 'd' ) + $offset_day;
+	$y  = gmdate( 'Y' ) + $offset_year;
+	$m  = gmdate( 'm' ) + $offset_month;
+	$d  = gmdate( 'd' ) + $offset_day;
 	$od = mktime( 0, 0, 0, $m, $d, $y );  // The order must be month, day, and year!
-	return date_i18n( DATE_STRING_FORMAT, $od );
+	return date_i18n( $format, $od );
 }
 
 /**
