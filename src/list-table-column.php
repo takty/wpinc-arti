@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-25
+ * @version 2022-02-07
  */
 
 namespace wpinc\post;
@@ -244,7 +244,7 @@ function set_list_table_column( string $post_type, array $columns ): void {
 		"manage_{$post_type}_posts_custom_column",
 		function ( $name, $post_id ) use ( $val_fns ) {
 			if ( isset( $val_fns[ $name ] ) ) {
-				$val = get_post_meta( $post_id, $name, true );
+				$val = get_post_meta( $post_id, substr( $name, 5 /* 'meta-' */ ), true );
 				$fn  = $val_fns[ $name ];
 				echo call_user_func( $fn, $val );  // phpcs:ignore
 			}

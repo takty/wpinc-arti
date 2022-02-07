@@ -240,22 +240,22 @@ function set_admin_column( string $post_type, bool $add_cat, bool $add_tag ): vo
  */
 function add_duration_column( string $post_type, array $cs = array() ): array {
 	$pto       = get_post_type_object( $post_type );
-	$label_bgn = $pto->labels->duration_from ?? __( 'From' );
-	$label_end = $pto->labels->duration_to ?? __( 'To' );
+	$label_bgn = $pto->labels->date_from ?? __( 'From' );
+	$label_end = $pto->labels->date_to ?? __( 'To' );
 
 	$cs[] = array(
 		'meta'     => PMK_DATE_FROM,
-		'label'    => $label_bgn,
-		'width'    => '15%',
 		'filter'   => '\wpinc\post\event\_filter_date_val',
 		'sortable' => true,
+		'label'    => $label_bgn,
+		'width'    => '15%',
 	);
 	$cs[] = array(
 		'meta'     => PMK_DATE_TO,
-		'label'    => $label_end,
-		'width'    => '15%',
 		'filter'   => '\wpinc\post\event\_filter_date_val',
 		'sortable' => true,
+		'label'    => $label_end,
+		'width'    => '15%',
 	);
 	return $cs;
 }
