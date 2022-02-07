@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-05
+ * @version 2022-02-07
  */
 
 namespace wpinc\post\event;
@@ -352,11 +352,11 @@ function _get_duration_state( int $post_id ): string {
 
 	if ( $from_ns ) {
 		$t      = \wpinc\post\create_date_array_of_today();
-		$t_from = \wpinc\post\compare_date_arrays( $t, $from_ns );
+		$t_from = \wpinc\post\compare_date_array( $t, $from_ns );
 
 		$state = 'ongoing';
 		if ( $to_ns ) {
-			$t_end = \wpinc\post\compare_date_arrays( $t, $to_ns );
+			$t_end = \wpinc\post\compare_date_array( $t, $to_ns );
 			if ( '<' === $t_from ) {
 				$state = 'upcoming';
 			} elseif ( '>' === $t_end ) {
