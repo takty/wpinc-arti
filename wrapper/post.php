@@ -4,7 +4,7 @@
  *
  * @package Sample
  * @author Takuto Yanagida
- * @version 2022-02-05
+ * @version 2022-02-07
  */
 
 namespace sample {
@@ -470,5 +470,47 @@ namespace sample\news {
 	 */
 	function set_admin_column( string $post_type, bool $add_cat, bool $add_tag ): void {
 		\wpinc\post\news\set_admin_column( $post_type, $add_cat, $add_tag );
+	}
+}
+
+namespace sample {
+	require_once __DIR__ . '/post/assets/text.php';
+
+	/**
+	 * Removes continuous spaces.
+	 *
+	 * @param string $str String.
+	 * @return string Modified string.
+	 */
+	function remove_continuous_spaces( string $str ): string {
+		return \wpinc\post\remove_continuous_spaces( $str );
+	}
+
+	/**
+	 * Trims multi-byte string.
+	 *
+	 * @param string $str String.
+	 * @return string Modified string.
+	 */
+	function mb_trim( string $str ): string {
+		return \wpinc\post\mb_trim( $str );
+	}
+
+	/**
+	 * Separates text.
+	 *
+	 * @param string $str  String.
+	 * @param array  $args {
+	 *     Arguments.
+	 *
+	 *     @type string   'word'   Segment type: 'ja' or 'none'. Default 'none'.
+	 *     @type string   'line'   Line wrapping type: 'raw', 'br', 'span', 'div', or 'array'. Default 'div'.
+	 *     @type callable 'filter' Filter function. Default 'esc_html'.
+	 *     @type bool     'small'  Whether to handle 'small' elements. Default true.
+	 * }
+	 * @return string|array Separated text or an array of separation.
+	 */
+	function separate_text( string $str, array $args = array() ) {
+		return \wpinc\post\separate_text( $str, $args );
 	}
 }

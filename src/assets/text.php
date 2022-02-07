@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-03
+ * @version 2022-02-07
  */
 
 namespace wpinc\post;
@@ -13,8 +13,6 @@ require_once __DIR__ . '/ja.php';
 
 /**
  * Removes continuous spaces.
- *
- * @access private
  *
  * @param string $str String.
  * @return string Modified string.
@@ -27,8 +25,6 @@ function remove_continuous_spaces( string $str ): string {
 
 /**
  * Trims multi-byte string.
- *
- * @access private
  *
  * @param string $str String.
  * @return string Modified string.
