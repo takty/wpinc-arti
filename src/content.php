@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-29
+ * @version 2022-02-08
  */
 
 namespace wpinc\post;
@@ -17,7 +17,10 @@ require_once __DIR__ . '/assets/text.php';
  * @param int    $length Number of characters. Default 220.
  * @param string $more   (Optional) What to append if $text needs to be trimmed. Default '...'.
  */
-function enable_custom_excerpt( int $length = 220, string $more = '...' ) {
+function enable_custom_excerpt( int $length = 220, string $more = '...' ): void {
+	if ( is_admin() ) {
+		return;
+	}
 	add_filter(
 		'excerpt_length',
 		function () use ( $length ) {

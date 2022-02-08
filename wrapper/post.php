@@ -4,7 +4,7 @@
  *
  * @package Sample
  * @author Takuto Yanagida
- * @version 2022-02-07
+ * @version 2022-02-08
  */
 
 namespace sample {
@@ -22,7 +22,7 @@ namespace sample {
 	 * @param int    $length Number of characters. Default 220.
 	 * @param string $more   (Optional) What to append if $text needs to be trimmed. Default '...'.
 	 */
-	function enable_custom_excerpt( int $length = 220, string $more = '...' ) {
+	function enable_custom_excerpt( int $length = 220, string $more = '...' ): void {
 		\wpinc\post\enable_custom_excerpt( $length, $more );
 	}
 
@@ -89,7 +89,7 @@ namespace sample {
 	 *
 	 * @param int|null $pos (Optional) Column position.
 	 */
-	function enable_page_slug_column( ?int $pos = null ) {
+	function enable_page_slug_column( ?int $pos = null ): void {
 		\wpinc\post\enable_page_slug_column( $pos );
 	}
 
@@ -99,7 +99,7 @@ namespace sample {
 	 *
 	 * @param int|null $pos (Optional) Column position.
 	 */
-	function enable_menu_order_column( ?int $pos = null ) {
+	function enable_menu_order_column( ?int $pos = null ): void {
 		\wpinc\post\enable_menu_order_column( $pos );
 	}
 
