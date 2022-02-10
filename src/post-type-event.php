@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-07
+ * @version 2022-02-10
  */
 
 namespace wpinc\post\event;
@@ -34,6 +34,7 @@ function register_post_type( array $args = array() ): void {
 	$args += $def_opts;
 	$args += array(
 		'public'        => true,
+		'show_in_rest'  => true,
 		'has_archive'   => true,
 		'rewrite'       => false,
 		'menu_position' => 5,
