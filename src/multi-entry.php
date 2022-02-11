@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-03
+ * @version 2022-02-12
  */
 
 namespace wpinc\post;
@@ -20,12 +20,7 @@ require_once __DIR__ . '/query.php';
  * @param array       $args (Optional) Additional arguments passed to the template. Default array().
  */
 function expand_entries( array $ids, string $slug, ?string $name = null, array $args = array() ): void {
-	$ids = array_map(
-		function ( $id ) {
-			return (int) $id;
-		},
-		$ids
-	);
+	$ids = array_map( 'intval', $ids );
 	$ps  = _get_pages_by_ids( $ids );
 	the_loop_with_page_template( $ps, $slug, $name, $args );
 }
@@ -39,8 +34,7 @@ function expand_entries( array $ids, string $slug, ?string $name = null, array $
  * @return array Pages.
  */
 function _get_pages_by_ids( array $ids ): array {
-	$id2p = array();
-	$ps   = get_posts(
+	$ps = get_posts(
 		array(
 			'posts_per_page' => -1,
 			'post_type'      => 'page',
@@ -49,10 +43,9 @@ function _get_pages_by_ids( array $ids ): array {
 			'post__in'       => $ids,
 		)
 	);
-	foreach ( $ps as $p ) {
-		$id2p[ $p->ID ] = $p;
-	}
-	$ret = array();
+
+	$id2p = array_column( $ps, null, 'ID' );
+	$ret  = array();
 	foreach ( $ids as $id ) {
 		if ( isset( $id2p[ $id ] ) ) {
 			$ret[] = $id2p[ $id ];

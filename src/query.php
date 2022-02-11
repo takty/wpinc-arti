@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-03
+ * @version 2022-02-12
  */
 
 namespace wpinc\post;
@@ -212,14 +212,9 @@ function add_sibling_page_query( ?int $sibling_id = null, array $args = array() 
  * @return \WP_Post[] Array of post objects.
  */
 function add_posts( array $augend, array $addend, ?int $count = null ): array {
-	$augend_ips = array();
-	foreach ( $augend as $p ) {
-		$augend_ips[ $p->ID ] = $p;
-	}
-	$addend_ips = array();
-	foreach ( $addend as $p ) {
-		$addend_ips[ $p->ID ] = $p;
-	}
+	$augend_ips = array_column( $augend, null, 'ID' );
+	$addend_ips = array_column( $addend, null, 'ID' );
+
 	$ret = array_values( $augend_ips + $addend_ips );
 	if ( 0 < $count ) {
 		array_splice( $ret, $count );
