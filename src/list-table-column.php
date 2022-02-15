@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-08
+ * @version 2022-02-15
  */
 
 namespace wpinc\post;
@@ -172,6 +172,11 @@ function _splice_key_value( array $array, int $offset, ?int $length = null, arra
  * @param array  $columns   Columns.
  */
 function set_list_table_column( string $post_type, array $columns ): void {
+	global $pagenow;
+	if ( ! is_admin() || 'edit.php' !== $pagenow ) {
+		return;
+	}
+
 	$def_cols = array(
 		'cb'     => '<input type="checkbox">',
 		'title'  => _x( 'Title', 'column name', 'default' ),
