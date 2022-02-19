@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-10
+ * @version 2022-02-20
  */
 
 namespace wpinc\post\news;
@@ -31,7 +31,7 @@ function register_post_type( string $post_type = 'news', string $slug = '', arra
 		'rewrite'       => false,
 		'menu_position' => 5,
 		'menu_icon'     => 'dashicons-admin-post',
-		'supports'      => array( 'title', 'editor', 'revisions', 'thumbnail' ),
+		'supports'      => array( 'title', 'editor', 'revisions', 'thumbnail', 'custom-fields' ),
 		'labels'        => $labels + array( 'name' => 'News' ),
 	);
 	\register_post_type( $post_type, $args );
