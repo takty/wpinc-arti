@@ -6,18 +6,18 @@
  */
 
 ((wp) => {
-	const el = wp.element.createElement;
 	const {
-		data      : { useSelect, useDispatch },
 		date      : { dateI18n },
+		data      : { useSelect },
+		coreData  : { useEntityProp },
 		plugins   : { registerPlugin },
-		element   : { useState, useEffect, Fragment },
+		element   : { useState, Fragment, createElement: el },
 		components: { DateTimePicker, Button, PanelRow, Dropdown },
 		editPost  : { PluginDocumentSettingPanel },
 	} = wp;
 
-	const pmk_from = window?.wpinc_duration_picker?.pmk_from    ?? '_date_from';
-	const pmk_to   = window?.wpinc_duration_picker?.pmk_to      ?? '_date_to';
+	const pmk_from = window?.wpinc_duration_picker?.pmk_from ?? '_date_from';
+	const pmk_to   = window?.wpinc_duration_picker?.pmk_to   ?? '_date_to';
 
 	const labels = window?.wpinc_duration_picker?.labels ?? {};
 	const format = window?.wpinc_duration_picker?.format ?? 'Y-m-d';
@@ -61,17 +61,9 @@
 	}
 
 	const render = () => {
-		const { meta: { [pmk_from]: initDateFrom, [pmk_to]: initDateTo }} = useSelect(select => ({
-			meta: select('core/editor').getEditedPostAttribute('meta') || {},
-		}));
-
-		const { editPost }            = useDispatch('core/editor');
-		const [dateFrom, setDateFrom] = useState(initDateFrom);
-		const [dateTo, setDateTo]     = useState(initDateTo);
-
-		useEffect(() => {
-			editPost({ meta: { [pmk_from]: (dateFrom ? dateFrom : null), [pmk_to]: (dateTo ? dateTo : null) } });
-		}, [dateFrom, dateTo]);
+		const postType        = useSelect((select) => select('core/editor').getCurrentPostType(), []);
+		const [meta, setMeta] = useEntityProp('postType', postType, 'meta');
+		const updateMeta      = (key, val) => setMeta({ ...meta, [key]: (val ? val : null) });
 
 		return el(
 			PluginDocumentSettingPanel, {
@@ -86,8 +78,8 @@
 					{
 						label       : labels.date_from    ?? 'From',
 						defaultLabel: labels.default_from ?? 'Pick Date',
-						currentDate : dateFrom,
-						onChange    : setDateFrom,
+						currentDate : meta[pmk_from],
+						onChange    : v => updateMeta(pmk_from, v),
 						format,
 					}
 				)
@@ -100,8 +92,8 @@
 					{
 						label       : labels.date_to    ?? 'To',
 						defaultLabel: labels.default_to ?? 'Pick Date',
-						currentDate : dateTo,
-						onChange    : setDateTo,
+						currentDate : meta[pmk_to],
+						onChange    : v => updateMeta(pmk_to, v),
 						format,
 					}
 				)
