@@ -1,0 +1,32 @@
+# Translation of Post - Development in Japanese
+# @package Wpinc Post
+# @author Takuto Yanagida
+# @version 2022-02-28
+
+# Post Type Event --------------------------------------------------------------
+
+msgctxt "post type event"
+msgid "Events"
+msgstr "イベント"
+
+msgctxt "post type event"
+msgid "Event"
+msgstr "イベント"
+
+msgctxt "post type event"
+msgid "Duration"
+msgstr "開催期間"
+
+msgctxt "post type event"
+msgid "From"
+msgstr "開始"
+
+msgctxt "post type event"
+msgid "To"
+msgstr "終了"
+
+# Post Type News ---------------------------------------------------------------
+
+msgctxt "post type news"
+msgid "News"
+msgstr "ニュース"

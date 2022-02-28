@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-20
+ * @version 2022-02-28
  */
 
 namespace wpinc\post\news;
@@ -32,7 +32,7 @@ function register_post_type( string $post_type = 'news', string $slug = '', arra
 		'menu_position' => 5,
 		'menu_icon'     => 'dashicons-admin-post',
 		'supports'      => array( 'title', 'editor', 'revisions', 'thumbnail', 'custom-fields' ),
-		'labels'        => $labels + array( 'name' => 'News' ),
+		'labels'        => $labels + array( 'name' => _x( 'News', 'post type news', 'wpinc_post' ) ),
 	);
 	\register_post_type( $post_type, $args );
 	\wpinc\post\add_rewrite_rules( $post_type, $slug, 'date', false );

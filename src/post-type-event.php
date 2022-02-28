@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-27
+ * @version 2022-02-28
  */
 
 namespace wpinc\post\event;
@@ -44,10 +44,10 @@ function register_post_type( array $args = array() ): void {
 	);
 
 	$args['labels'] += array(
-		'name'      => 'Events',
-		'date'      => 'Date',
-		'date_from' => 'From',
-		'date_to'   => 'To',
+		'name'      => _x( 'Events', 'post type event', 'wpinc_post' ),
+		'date'      => _x( 'Duration', 'post type event', 'wpinc_post' ),
+		'date_from' => _x( 'From', 'post type event', 'wpinc_post' ),
+		'date_to'   => _x( 'To', 'post type event', 'wpinc_post' ),
 	);
 
 	if ( empty( $args['slug'] ) ) {
@@ -348,8 +348,8 @@ function set_admin_column( string $post_type, bool $add_cat, bool $add_tag ): vo
  */
 function add_duration_column( string $post_type, array $cs = array() ): array {
 	$pto       = get_post_type_object( $post_type );
-	$label_bgn = $pto->labels->date_from ?? __( 'From' );
-	$label_end = $pto->labels->date_to ?? __( 'To' );
+	$label_bgn = $pto->labels->date_from ?? _x( 'From', 'post type event', 'wpinc_post' );
+	$label_end = $pto->labels->date_to ?? _x( 'To', 'post type event', 'wpinc_post' );
 
 	$cs[] = array(
 		'meta'     => PMK_DATE_FROM,
