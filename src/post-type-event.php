@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-28
+ * @version 2022-03-04
  */
 
 namespace wpinc\post\event;
@@ -268,7 +268,7 @@ function _set_duration_picker( array $args ): void {
 	}
 	\wpinc\dia\duration_picker\initialize( $args );
 	add_action(
-		'admin_menu',
+		'add_meta_boxes',
 		function () use ( $args, $dp_args ) {
 			\wpinc\dia\duration_picker\add_meta_box( $dp_args, $args['labels']['date'], $args['post_type'], 'side' );
 		}
