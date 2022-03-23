@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-08
+ * @version 2022-03-23
  */
 
 namespace wpinc\post;
@@ -68,7 +68,7 @@ function has_content( bool $str = false ): bool {
 	if ( false === $str ) {
 		$str = get_the_content();
 	}
-	$str = strip_tags( $str, '<img><hr><br>' );
+	$str = strip_tags( $str, array( 'img', 'hr', 'br', 'iframe' ) );
 	$str = str_replace( '&nbsp;', '', $str );
 	return ! empty( trim( $str ) );
 }
