@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-03
+ * @version 2022-05-11
  */
 
 namespace wpinc\post;
@@ -20,13 +20,13 @@ namespace wpinc\post;
  */
 function create_date_string_of_today( int $offset_year = 0, int $offset_month = 0, int $offset_day = 0, string $format = 'Y-m-d' ): string {
 	if ( 0 === $offset_year && 0 === $offset_month && 0 === $offset_day ) {
-		return date_i18n( $format );
+		return wp_date( $format );
 	}
 	$y  = gmdate( 'Y' ) + $offset_year;
 	$m  = gmdate( 'm' ) + $offset_month;
 	$d  = gmdate( 'd' ) + $offset_day;
 	$od = mktime( 0, 0, 0, $m, $d, $y );  // The order must be month, day, and year!
-	return date_i18n( $format, $od );
+	return wp_date( $format, $od );
 }
 
 /**
