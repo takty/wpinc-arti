@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-15
+ * @version 2022-05-25
  */
 
 namespace wpinc\post;
@@ -19,8 +19,7 @@ function enable_page_slug_column( ?int $pos = null ): void {
 	if ( ! is_admin() ) {
 		return;
 	}
-	global $typenow;
-	if ( 'page' !== $typenow ) {
+	if ( 'page' !== _get_current_post_type() ) {
 		return;
 	}
 	add_filter(
@@ -66,12 +65,12 @@ function enable_menu_order_column( ?int $pos = null ): void {
 	if ( ! is_admin() ) {
 		return;
 	}
-	global $typenow;
-	if ( ! post_type_supports( $typenow, 'page-attributes' ) ) {
+	$pt = _get_current_post_type();
+	if ( ! post_type_supports( $pt, 'page-attributes' ) ) {
 		return;
 	}
 	add_filter(
-		"manage_edit-{$typenow}_columns",
+		"manage_edit-{$pt}_columns",
 		function ( $cs ) use ( $pos ) {
 			if ( ! isset( $cs['order'] ) ) {
 				if ( null === $pos ) {
@@ -85,14 +84,14 @@ function enable_menu_order_column( ?int $pos = null ): void {
 		}
 	);
 	add_filter(
-		"manage_edit-{$typenow}_sortable_columns",
+		"manage_edit-{$pt}_sortable_columns",
 		function ( $cs ) {
 			$cs['order'] = 'menu_order';
 			return $cs;
 		}
 	);
 	add_action(
-		"manage_{$typenow}_posts_custom_column",
+		"manage_{$pt}_posts_custom_column",
 		function ( $col_name, $post_id ) {
 			if ( 'order' === $col_name ) {
 				$post = get_post( $post_id );
@@ -135,6 +134,24 @@ function _splice_key_value( array $array, int $offset, ?int $length = null, arra
 		$new[ $kv[0] ] = $kv[1];
 	}
 	return $new;
+}
+
+/**
+ * Gets current post type.
+ */
+function _get_current_post_type() {
+	global $post, $typenow, $current_screen;
+
+	if ( $post && $post->post_type ) {
+		return $post->post_type;
+	} elseif ( $typenow ) {
+		return $typenow;
+	} elseif ( $current_screen && $current_screen->post_type ) {
+		return $current_screen->post_type;
+	} elseif ( is_admin() && isset( $_REQUEST['post_type'] ) ) {  // phpcs:ignore
+		return sanitize_key( $_REQUEST['post_type'] );  // phpcs:ignore
+	}
+	return null;
 }
 
 
