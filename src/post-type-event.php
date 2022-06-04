@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-03-04
+ * @version 2022-06-04
  */
 
 namespace wpinc\post\event;
@@ -73,12 +73,33 @@ function register_post_type( array $args = array() ): void {
 			)
 		);
 	}
+	_initialize_hooks( $args );
+}
+
+/**
+ * Initializes hooks.
+ *
+ * @access private
+ *
+ * @param array $args Arguments.
+ */
+function _initialize_hooks( array $args ): void {
 	if ( ! is_admin() ) {
+		// For adding duration state to the body classes.
 		add_filter(
 			'body_class',
 			function ( array $classes ) use ( $args ) {
 				return _cb_body_class( $classes, $args['post_type'] );
 			}
+		);
+		// For adding duration state to the post classes.
+		add_filter(
+			'post_class',
+			function ( array $classes, array $class, int $post_id ) use ( $args ) {
+				return _cb_post_class( $classes, $class, $post_id, $args['post_type'] );
+			},
+			10,
+			3
 		);
 	}
 
@@ -176,6 +197,24 @@ function _cb_body_class( array $classes, string $post_type ): array {
 		global $wp_query;
 		$post      = $wp_query->get_queried_object();
 		$classes[] = _get_duration_state( $post->ID );
+	}
+	return $classes;
+}
+
+/**
+ * Callback function for 'post_class' filter.
+ *
+ * @access private
+ *
+ * @param string[] $classes   An array of post class names.
+ * @param string[] $class     An array of additional class names added to the post.
+ * @param int      $post_id   The post ID.
+ * @param string   $post_type Post type.
+ * @return array Classes.
+ */
+function _cb_post_class( array $classes, array $class, int $post_id, string $post_type ): array {
+	if ( get_post_type( $post_id ) === $post_type ) {
+		$classes[] = _get_duration_state( $post_id );
 	}
 	return $classes;
 }
