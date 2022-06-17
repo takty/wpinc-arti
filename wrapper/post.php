@@ -4,7 +4,7 @@
  *
  * @package Sample
  * @author Takuto Yanagida
- * @version 2022-02-08
+ * @version 2022-06-17
  */
 
 namespace sample {
@@ -151,6 +151,18 @@ namespace sample {
 	 */
 	function expand_entries( array $ids, string $slug, ?string $name = null, array $args = array() ): void {
 		\wpinc\post\expand_entries( $ids, $slug, $name, $args );
+	}
+
+	/**
+	 * Expands multiple entries with titles.
+	 *
+	 * @param array       $id_to_title Array of post IDs to their titles.
+	 * @param string      $slug        The slug name for the generic template.
+	 * @param string|null $name        (Optional) The name of the specialized template. Default null.
+	 * @param array       $args        (Optional) Additional arguments passed to the template. Default array().
+	 */
+	function expand_entries_with_titles( array $id_to_title, string $slug, ?string $name = null, array $args = array() ): void {
+		\wpinc\post\expand_entries_with_titles( $id_to_title, $slug, $name, $args );
 	}
 
 
