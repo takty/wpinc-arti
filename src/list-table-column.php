@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-05-25
+ * @version 2022-07-01
  */
 
 namespace wpinc\post;
@@ -41,7 +41,9 @@ function enable_page_slug_column( ?int $pos = null ): void {
 		function ( $col_name, $post_id ) {
 			if ( 'slug' === $col_name ) {
 				$post = get_post( $post_id );
-				echo esc_attr( $post->post_name );
+				if ( $post ) {
+					echo esc_attr( $post->post_name );
+				}
 			}
 		},
 		10,
@@ -95,7 +97,9 @@ function enable_menu_order_column( ?int $pos = null ): void {
 		function ( $col_name, $post_id ) {
 			if ( 'order' === $col_name ) {
 				$post = get_post( $post_id );
-				echo esc_attr( $post->menu_order );
+				if ( $post ) {
+					echo esc_attr( $post->menu_order );
+				}
 			}
 		},
 		10,

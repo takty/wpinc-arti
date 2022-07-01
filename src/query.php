@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-12
+ * @version 2022-07-01
  */
 
 namespace wpinc\post;
@@ -194,7 +194,7 @@ function add_child_page_query( ?int $parent_id = null, array $args = array() ): 
  */
 function add_sibling_page_query( ?int $sibling_id = null, array $args = array() ): array {
 	$post      = get_post( $sibling_id ?? get_the_ID() );
-	$parent_id = empty( $post ) ? 0 : $post->post_parent;
+	$parent_id = $post ? $post->post_parent : 0;
 	$args      = add_page_query( $args );
 	return $args + array( 'post_parent' => $parent_id );
 }
