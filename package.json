@@ -23,8 +23,8 @@
 		"not dead"
 	],
 	"devDependencies": {
-		"@babel/core": "^7.19.1",
-		"@babel/preset-env": "^7.19.1",
+		"@babel/core": "^7.19.3",
+		"@babel/preset-env": "^7.19.3",
 		"gettext-parser": "^6.0.0",
 		"gulp": "^4.0.2",
 		"gulp-babel": "^8.0.0",
