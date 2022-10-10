@@ -4,10 +4,11 @@
  *
  * @package Sample
  * @author Takuto Yanagida
- * @version 2022-06-17
+ * @version 2022-10-11
  */
 
 namespace sample {
+	require_once __DIR__ . '/post/assets/admin-current-post.php';
 	require_once __DIR__ . '/post/content.php';
 	require_once __DIR__ . '/post/custom-date.php';
 	require_once __DIR__ . '/post/list-table-column.php';
@@ -399,7 +400,7 @@ namespace sample {
 	 * @return bool True if the current post type is $post_type.
 	 */
 	function is_post_type( string $post_type ): bool {
-		return \wpinc\post\is_post_type( $post_type );
+		return \wpinc\is_admin_post_type( $post_type );
 	}
 
 	/**

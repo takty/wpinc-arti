@@ -4,12 +4,13 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-06-04
+ * @version 2022-10-11
  */
 
 namespace wpinc\post\event;
 
 require_once __DIR__ . '/assets/date.php';
+require_once __DIR__ . '/assets/admin-current-post.php';
 require_once __DIR__ . '/post-type.php';
 require_once __DIR__ . '/list-table-column.php';
 
@@ -293,7 +294,7 @@ function _cb_rest_after_insert( array $args, \WP_Post $post ): void {
  * @param array $args Arguments.
  */
 function _set_duration_picker( array $args ): void {
-	if ( ! _is_post_type( $args['post_type'] ) ) {
+	if ( ! \wpinc\is_admin_post_type( $args['post_type'] ) ) {
 		return;
 	}
 	$dp_args = array(
@@ -318,29 +319,6 @@ function _set_duration_picker( array $args ): void {
 			\wpinc\dia\duration_picker\save_meta_box( $dp_args, $post_id );
 		}
 	);
-}
-
-/**
- * Checks current post type.
- *
- * @param string $post_type Post type.
- * @return bool True on the current post type is $post_type.
- */
-function _is_post_type( string $post_type ): bool {
-	$post    = $_GET['post'] ?? null;  // phpcs:ignore
-	$post_id = $_POST['post_ID'] ?? null;  // phpcs:ignore
-	if ( $post || $post_id ) {
-		$post_id = $post ? $post : $post_id;
-	}
-	$post_id = intval( $post_id );
-
-	$p = get_post( $post_id );
-	if ( $p ) {
-		$pt = $p->post_type;
-	} else {
-		$pt = $_GET['post_type'] ?? '';  // phpcs:ignore
-	}
-	return $post_type === $pt;
 }
 
 
