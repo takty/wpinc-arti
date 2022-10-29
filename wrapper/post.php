@@ -4,7 +4,7 @@
  *
  * @package Sample
  * @author Takuto Yanagida
- * @version 2022-10-11
+ * @version 2022-10-29
  */
 
 namespace sample {
@@ -28,13 +28,35 @@ namespace sample {
 	}
 
 	/**
+	 * Checks whether the string contains any title.
+	 *
+	 * @param string|null $str  String.
+	 * @param array       $args {
+	 *     Arguments.
+	 *
+	 *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
+	 *     @type string                  'meta_key' (Optional) Post meta key.
+	 * }
+	 * @return bool Whether the string contains any title.
+	 */
+	function has_title( ?string $str = null, $args = array() ): bool {
+		return \wpinc\post\has_title( $str, $args );
+	}
+
+	/**
 	 * Checks whether the string contains any content.
 	 *
-	 * @param bool $str String.
+	 * @param string|null $str  String.
+	 * @param array       $args {
+	 *     Arguments.
+	 *
+	 *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
+	 *     @type string                  'meta_key' (Optional) Post meta key.
+	 * }
 	 * @return bool Whether the string contains any content.
 	 */
-	function has_content( bool $str = false ): bool {
-		return \wpinc\post\has_content( $str );
+	function has_content( ?string $str = null, $args = array() ): bool {
+		return \wpinc\post\has_content( $str, $args );
 	}
 
 	/**
@@ -45,14 +67,34 @@ namespace sample {
 	 * @param array  $args {
 	 *     Arguments.
 	 *
-	 *     @type int      'short'  Length at which the title is considered short. Default 8.
-	 *     @type int      'long'   Length at which the title is considered long. Default 32.
-	 *     @type string   'mode'   Mode of separation. Default 'segment_small'.
-	 *     @type callable 'filter' Filter function. Default 'esc_html'.
+	 *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
+	 *     @type string                  'meta_key' (Optional) Post meta key.
+	 *     @type int                     'short'    Length at which the title is considered short. Default 8.
+	 *     @type int                     'long'     Length at which the title is considered long. Default 32.
+	 *     @type string                  'word'     (For 'separate_text') Segment type: 'ja' or 'none'. Default 'none'.
+	 *     @type string                  'line'     (For 'separate_text') Line wrapping type: 'raw', 'br', 'span', 'div', or 'array'. Default 'div'.
+	 *     @type callable                'filter'   (For 'separate_text') Filter function.
+	 *     @type bool                    'small'    (For 'separate_text') Whether to handle 'small' elements.
 	 * }
 	 */
 	function the_title( string $before = '', string $after = '', array $args = array() ): void {
 		\wpinc\post\the_title( $before, $after, $args );
+	}
+
+	/**
+	 * Displays the post content.
+	 *
+	 * @param string|null $more_link_text Content for when there is more text. Default: null.
+	 * @param bool        $strip_teaser   Strip teaser content before the more text. Default: false.
+	 * @param array       $args {
+	 *     Arguments.
+	 *
+	 *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
+	 *     @type string                  'meta_key' (Optional) Post meta key.
+	 * }
+	 */
+	function the_content( ?string $more_link_text = null, bool $strip_teaser = false, array $args = array() ): void {
+		\wpinc\post\the_content( $more_link_text, $strip_teaser, $args );
 	}
 
 
@@ -408,6 +450,15 @@ namespace sample {
 	 */
 	function get_post_type_title() {
 		return \wpinc\post\get_post_type_title();
+	}
+
+	/**
+	 * Retrieves page ID corresponding to the current URL.
+	 *
+	 * @return int Page ID.
+	 */
+	function get_corresponding_page_id(): int {
+		return \wpinc\post\get_corresponding_page_id();
 	}
 }
 
