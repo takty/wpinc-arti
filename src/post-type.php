@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-26
+ * @version 2022-11-14
  */
 
 namespace wpinc\post;
@@ -182,11 +182,14 @@ function add_date_archive_link_filter( string $post_type, string $slug = '', str
  * @return string A query value.
  */
 function get_query_arg( string $key, string $url ): string {
-	$qps = explode( '&', wp_parse_url( $url, PHP_URL_QUERY ) );
-	foreach ( $qps as $qp ) {
-		$key_val = explode( '=', $qp );
-		if ( 2 === count( $key_val ) && $key === $key_val[0] ) {
-			return $key_val[1];
+	$query = wp_parse_url( $url, PHP_URL_QUERY );
+	if ( $query ) {
+		$qps = explode( '&', $query );
+		foreach ( $qps as $qp ) {
+			$key_val = explode( '=', $qp );
+			if ( 2 === count( $key_val ) && $key === $key_val[0] ) {
+				return $key_val[1];
+			}
 		}
 	}
 	return '';
