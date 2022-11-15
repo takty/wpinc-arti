@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-07-01
+ * @version 2022-11-15
  */
 
 namespace wpinc\post;
@@ -19,11 +19,17 @@ namespace wpinc\post;
  */
 function the_loop( array $ps, string $slug, string $name = null, array $args = array() ): void {
 	global $post;
+	$orig_post = $post;
 	foreach ( $ps as $post ) {  // phpcs:ignore
 		setup_postdata( $post );
 		get_template_part( $slug, $name, $args );
 	}
-	wp_reset_postdata();
+	if ( $orig_post ) {
+		$post = $orig_post;  // phpcs:ignore
+		setup_postdata( $post );
+	} else {
+		wp_reset_postdata();
+	}
 }
 
 /**
@@ -36,13 +42,19 @@ function the_loop( array $ps, string $slug, string $name = null, array $args = a
  */
 function the_loop_with_page_template( array $ps, string $slug, ?string $name = null, array $args = array() ): void {
 	global $post;
+	$orig_post = $post;
 	foreach ( $ps as $post ) {  // phpcs:ignore
 		setup_postdata( $post );
 		$t = get_page_template_slug();
 		$n = ( empty( $t ) || 'default' === $t ) ? $name : basename( $t, '.php' );
 		get_template_part( $slug, $n, $args );
 	}
-	wp_reset_postdata();
+	if ( $orig_post ) {
+		$post = $orig_post;  // phpcs:ignore
+		setup_postdata( $post );
+	} else {
+		wp_reset_postdata();
+	}
 }
 
 
