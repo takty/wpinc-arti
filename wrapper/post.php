@@ -4,7 +4,7 @@
  *
  * @package Sample
  * @author Takuto Yanagida
- * @version 2022-10-29
+ * @version 2022-11-21
  */
 
 namespace sample {
@@ -459,6 +459,32 @@ namespace sample {
 	 */
 	function get_corresponding_page_id(): int {
 		return \wpinc\post\get_corresponding_page_id();
+	}
+
+	/**
+	 * Computes the difference of arrays of posts.
+	 *
+	 * @param array $array  The array to compare from.
+	 * @param array ...$arrays Arrays to compare against.
+	 * @return array Posts.
+	 */
+	function post_array_diff( array $array, array ...$arrays ): array {
+		return \wpinc\post\post_array_diff( $array, ...$arrays );
+	}
+
+	/**
+	 * Sorts posts.
+	 *
+	 * @param array $args {
+	 *     Arguments.
+	 *
+	 *     @type string 'order' Order of sorting: 'asc' or 'desc'. Default 'desc'.
+	 * }
+	 * @param array ...$arrays Array of post arrays.
+	 * @return array Posts.
+	 */
+	function sort_post_array( array $args, array ...$arrays ): array {
+		return \wpinc\post\sort_post_array( $args, ...$arrays );
 	}
 }
 
