@@ -95,7 +95,7 @@ function sort_post_array( array $args, array ...$arrays ): array {
 			$date_ps[ $d ][ $p->ID ] = $p;
 		}
 	}
-	$order = strtolower( $order );
+	$order = strtolower( $args['order'] );
 	if ( 'asc' === $order ) {
 		ksort( $date_ps );
 	} elseif ( 'desc' === $order ) {
