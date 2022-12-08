@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-07
+ * @version 2022-12-08
  */
 
 namespace wpinc\post;
@@ -113,7 +113,7 @@ function separate_text( string $str, array $args = array() ) {
  * @return string Segmented string.
  */
 function _segment_and_wrap( string $l, $filter = 'esc_html' ): string {
-	$ps = separate_text_ja( $l );
+	$ps = ja\get_segment( $l );
 	$ws = array();
 	foreach ( $ps as $p ) {
 		$w    = $filter ? call_user_func( $filter, $p[0] ) : $p[0];

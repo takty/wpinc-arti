@@ -4,10 +4,10 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-01-26
+ * @version 2022-12-08
  */
 
-namespace wpinc\post;
+namespace wpinc\post\ja;
 
 /**
  * Gets segments.
