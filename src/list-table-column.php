@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-07-01
+ * @version 2023-02-21
  */
 
 namespace wpinc\post;
@@ -168,10 +168,13 @@ function _get_current_post_type() {
  * array(
  *     'cb',
  *     'title',
+ *     'author',
  *     'date',
+ *     'order',
+ *     'comments',
  *     array(
- *         'name'  => 'order',
- *         'label' => 'Order',
+ *         'name'  => 'slug',
+ *         'label' => 'Slug',
  *         'width' => '10%',
  *     )
  *     array(
@@ -199,12 +202,17 @@ function set_list_table_column( string $post_type, array $columns ): void {
 	}
 
 	$def_cols = array(
-		'cb'     => '<input type="checkbox">',
-		'title'  => _x( 'Title', 'column name', 'default' ),
-		'author' => __( 'Author', 'default' ),
-		'date'   => __( 'Date', 'default' ),
-		'order'  => __( 'Order', 'default' ),
-		'slug'   => __( 'Slug', 'default' ),
+		'cb'       => '<input type="checkbox">',
+		'title'    => _x( 'Title', 'column name', 'default' ),
+		'author'   => __( 'Author', 'default' ),
+		'date'     => __( 'Date', 'default' ),
+		'order'    => __( 'Order', 'default' ),
+		'slug'     => __( 'Slug', 'default' ),
+		'comments' => sprintf(
+			'<span class="vers comment-grey-bubble" title="%1$s" aria-hidden="true"></span><span class="screen-reader-text">%2$s</span>',
+			esc_attr__( 'Comments', 'default' ),
+			__( 'Comments', 'default' )
+		),
 	);
 
 	$cols    = array();
