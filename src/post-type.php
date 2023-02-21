@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-11-14
+ * @version 2023-02-21
  */
 
 namespace wpinc\post;
@@ -39,12 +39,21 @@ function add_rewrite_rules( string $post_type, string $slug = '', string $date_s
  */
 function add_post_type_rewrite_rules( string $post_type, string $slug = '', bool $by_post_name = false ): void {
 	if ( $by_post_name ) {
-		add_rewrite_tag( "%$post_type%", '([^/]+)', "post_type=$post_type&name=" );
+		$regex = '([^/]+)';
+		$query = "post_type=$post_type&name=";
 	} else {
-		add_rewrite_tag( "%$post_type%", '([0-9]+)', "post_type=$post_type&p=" );
+		$regex = '([0-9]+)';
+		$query = "post_type=$post_type&p=";
 	}
+	add_rewrite_tag( "%$post_type%", $regex, $query );
+
 	$slug = ( empty( $slug ) ? $post_type : $slug );
 	add_permastruct( $post_type, "/$slug/%{$post_type}%", array( 'with_front' => false ) );
+
+	if ( post_type_supports( $post_type, 'comments' ) ) {
+		$cr = 'comment-page-([0-9]{1,})';
+		add_rewrite_rule( "$slug/$regex/$cr/?$", "index.php?$query" . '$matches[1]&cpage=$matches[2]', 'top' );
+	}
 }
 
 /**
