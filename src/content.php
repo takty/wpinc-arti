@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-10-29
+ * @version 2023-06-29
  */
 
 namespace wpinc\post;
@@ -94,9 +94,9 @@ function has_content( ?string $str = null, $args = array() ): bool {
 		$str = get_the_content( null, false, $args );
 	}
 	// phpcs:disable
-	// $allowed_tags = array( 'img', 'hr', 'br', 'iframe' );  // For PHP 7.4.
+	// $allowed_tags = array( 'hr', 'br', 'img', 'audio', 'video', 'canvas', 'iframe' );  // For PHP 7.4.
 	// phpcs:enable
-	$allowed_tags = '<img><hr><br><iframe>';  // For PHP 7.3.
+	$allowed_tags = '<hr><br><img><audio><video><canvas><iframe>';  // For PHP 7.3.
 
 	$str = strip_tags( $str, $allowed_tags );
 	$str = str_replace( '&nbsp;', '', $str );
