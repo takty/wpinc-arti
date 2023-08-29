@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-11-21
+ * @version 2023-08-29
  */
 
 namespace wpinc\post;
@@ -101,5 +101,6 @@ function sort_post_array( array $args, array ...$arrays ): array {
 	} elseif ( 'desc' === $order ) {
 		krsort( $date_ps );
 	}
-	return array_merge( ...array_map( 'array_values', $date_ps ) );
+	$pss = array_values( $date_ps );
+	return array_merge( array(), ...array_map( 'array_values', $pss ) );
 }
