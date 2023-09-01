@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-06-23
+ * @version 2023-08-31
  */
 
 namespace wpinc\post;
@@ -20,13 +20,16 @@ namespace wpinc\post;
  */
 function create_date_string_of_today( int $offset_year = 0, int $offset_month = 0, int $offset_day = 0, string $format = 'Y-m-d' ): string {
 	if ( 0 === $offset_year && 0 === $offset_month && 0 === $offset_day ) {
-		return wp_date( $format );
+		return (string) wp_date( $format );
 	}
 	$y  = (int) gmdate( 'Y' ) + $offset_year;
 	$m  = (int) gmdate( 'm' ) + $offset_month;
 	$d  = (int) gmdate( 'd' ) + $offset_day;
 	$od = mktime( 0, 0, 0, $m, $d, $y );  // The order must be month, day, and year!
-	return wp_date( $format, $od );
+	if ( false === $od ) {
+		return '';
+	}
+	return (string) wp_date( $format, $od );
 }
 
 /**
@@ -35,7 +38,7 @@ function create_date_string_of_today( int $offset_year = 0, int $offset_month = 
  * @param int $offset_year  Year offset.
  * @param int $offset_month Month offset.
  * @param int $offset_day   Day offset.
- * @return array Date array.
+ * @return string[] Date array.
  */
 function create_date_array_of_today( int $offset_year = 0, int $offset_month = 0, int $offset_day = 0 ): array {
 	$date_str = create_date_string_of_today( $offset_year, $offset_month, $offset_day );
@@ -49,8 +52,8 @@ function create_date_array_of_today( int $offset_year = 0, int $offset_month = 0
 /**
  * Compares date arrays.
  *
- * @param array $d1 Date array.
- * @param array $d2 Date array.
+ * @param string[] $d1 Date array.
+ * @param string[] $d2 Date array.
  * @return string Comparison result.
  */
 function compare_date_array( array $d1, array $d2 ): string {

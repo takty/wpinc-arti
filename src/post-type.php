@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-02-21
+ * @version 2023-08-31
  */
 
 namespace wpinc\post;
@@ -76,7 +76,7 @@ function add_post_type_link_filter( string $post_type, bool $by_post_name = fals
 			if ( $by_post_name ) {
 				$link = str_replace( "%$post_type%", $post->post_name, $ps );
 			} else {
-				$link = str_replace( "%$post_type%", $post->ID, $ps );
+				$link = str_replace( "%$post_type%", (string) $post->ID, $ps );
 			}
 			return home_url( user_trailingslashit( $link ) );
 		},

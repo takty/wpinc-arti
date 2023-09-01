@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-06-29
+ * @version 2023-08-31
  */
 
 namespace wpinc\post;
@@ -61,8 +61,8 @@ function enable_custom_excerpt( int $length = 220, string $more = '...' ): void 
 /**
  * Checks whether the string contains any title.
  *
- * @param string|null $str  String.
- * @param array       $args {
+ * @param string|null          $str  String.
+ * @param array<string, mixed> $args {
  *     Arguments.
  *
  *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
@@ -80,8 +80,8 @@ function has_title( ?string $str = null, $args = array() ): bool {
 /**
  * Checks whether the string contains any content.
  *
- * @param string|null $str  String.
- * @param array       $args {
+ * @param string|null          $str  String.
+ * @param array<string, mixed> $args {
  *     Arguments.
  *
  *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
@@ -110,9 +110,9 @@ function has_content( ?string $str = null, $args = array() ): bool {
 /**
  * Display the current post title with optional markup.
  *
- * @param string $before (Optional) Markup to prepend to the title. Default ''.
- * @param string $after  (Optional) Markup to append to the title. Default ''.
- * @param array  $args {
+ * @param string               $before (Optional) Markup to prepend to the title. Default ''.
+ * @param string               $after  (Optional) Markup to append to the title. Default ''.
+ * @param array<string, mixed> $args {
  *     Arguments.
  *
  *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
@@ -136,9 +136,9 @@ function the_title( string $before = '', string $after = '', array $args = array
 /**
  * Displays the post content.
  *
- * @param string|null $more_link_text Content for when there is more text. Default: null.
- * @param bool        $strip_teaser   Strip teaser content before the more text. Default: false.
- * @param array       $args {
+ * @param string|null          $more_link_text Content for when there is more text. Default: null.
+ * @param bool                 $strip_teaser   Strip teaser content before the more text. Default: false.
+ * @param array<string, mixed> $args {
  *     Arguments.
  *
  *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
@@ -157,10 +157,10 @@ function the_content( ?string $more_link_text = null, bool $strip_teaser = false
 /**
  * Apply title filters to string.
  *
- * @param string $str    String.
- * @param string $before (Optional) Markup to prepend to the title. Default ''.
- * @param string $after  (Optional) Markup to append to the title. Default ''.
- * @param array  $args {
+ * @param string               $str    String.
+ * @param string               $before (Optional) Markup to prepend to the title. Default ''.
+ * @param string               $after  (Optional) Markup to append to the title. Default ''.
+ * @param array<string, mixed> $args {
  *     Arguments.
  *
  *     @type int      'short'  Length at which the title is considered short. Default 8.
@@ -185,7 +185,12 @@ function process_title( string $str, string $before = '', string $after = '', ar
 
 	$len = mb_strlen( $str );
 	$cls = ( $args['long'] <= $len ) ? 'long' : ( ( $len <= $args['short'] ) ? 'short' : '' );
-	$str = str_replace( '%class', " $cls", $before ) . separate_text( $str, $args ) . $after;
+
+	$temp = separate_text( $str, $args );
+	if ( is_string( $temp ) ) {
+		$str = $temp;
+	}
+	$str = str_replace( '%class', " $cls", $before ) . $str . $after;
 	return $str;
 }
 
@@ -208,7 +213,7 @@ function process_content( string $str ): string {
 /**
  * Retrieves the post title.
  *
- * @param array $args {
+ * @param array<string, mixed> $args {
  *     Arguments.
  *
  *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
@@ -235,9 +240,9 @@ function get_the_title( array $args = array() ): string {
 /**
  * Retrieves the post content.
  *
- * @param string|null $more_link_text Content for when there is more text. Default: null.
- * @param bool        $strip_teaser   Strip teaser content before the more text. Default: false.
- * @param array       $args {
+ * @param string|null          $more_link_text Content for when there is more text. Default: null.
+ * @param bool                 $strip_teaser   Strip teaser content before the more text. Default: false.
+ * @param array<string, mixed> $args {
  *     Arguments.
  *
  *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.

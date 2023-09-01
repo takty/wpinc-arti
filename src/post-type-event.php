@@ -4,13 +4,14 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-10-11
+ * @version 2023-08-31
  */
 
 namespace wpinc\post\event;
 
-require_once __DIR__ . '/assets/date.php';
+require_once __DIR__ . '/assets/asset-url.php';
 require_once __DIR__ . '/assets/admin-current-post.php';
+require_once __DIR__ . '/assets/date.php';
 require_once __DIR__ . '/post-type.php';
 require_once __DIR__ . '/list-table-column.php';
 
@@ -21,7 +22,7 @@ const PMK_DATE_TO   = '_date_to';
 /**
  * Registers event-like post type.
  *
- * @param array $args Arguments.
+ * @param array<string, mixed> $args Arguments.
  */
 function register_post_type( array $args = array() ): void {
 	$def_opts = array(
@@ -82,7 +83,7 @@ function register_post_type( array $args = array() ): void {
  *
  * @access private
  *
- * @param array $args Arguments.
+ * @param array<string, mixed> $args Arguments.
  */
 function _initialize_hooks( array $args ): void {
 	if ( ! is_admin() ) {
@@ -110,7 +111,8 @@ function _initialize_hooks( array $args ): void {
 			function () use ( $args ) {
 				global $pagenow;
 				if ( 'post-new.php' === $pagenow || 'post.php' === $pagenow ) {
-					if ( get_current_screen()->is_block_editor() ) {
+					$cs = get_current_screen();
+					if ( $cs && $cs->is_block_editor() ) {
 						add_action(
 							'enqueue_block_editor_assets',
 							function () use ( $args ) {
@@ -211,7 +213,7 @@ function _cb_body_class( array $classes, string $post_type ): array {
  * @param string[] $class     An array of additional class names added to the post.
  * @param int      $post_id   The post ID.
  * @param string   $post_type Post type.
- * @return array Classes.
+ * @return string[] Classes.
  */
 function _cb_post_class( array $classes, array $class, int $post_id, string $post_type ): array {
 	if ( get_post_type( $post_id ) === $post_type ) {
@@ -227,18 +229,19 @@ function _cb_post_class( array $classes, array $class, int $post_id, string $pos
 /**
  * Callback function for 'enqueue_block_editor_assets' action.
  *
- * @param array $args Arguments.
+ * @param array<string, mixed> $args Arguments.
  *
  * @access private
  */
 function _cb_enqueue_block_editor_assets( array $args ): void {
-	if ( get_current_screen()->id === $args['post_type'] ) {
+	$cs = get_current_screen();
+	if ( $cs && $cs->id === $args['post_type'] ) {
 		$url_to = untrailingslashit( \wpinc\get_file_uri( __DIR__ ) );
 		wp_enqueue_script(
 			'wpinc-duration-picker',
 			\wpinc\abs_url( $url_to, './assets/js/duration-picker.min.js' ),
 			array( 'wp-element', 'wp-i18n', 'wp-data', 'wp-components', 'wp-edit-post', 'wp-plugins' ),
-			filemtime( __DIR__ . '/assets/js/duration-picker.min.js' ),
+			(string) filemtime( __DIR__ . '/assets/js/duration-picker.min.js' ),
 			true
 		);
 		$params = array(
@@ -261,8 +264,8 @@ function _cb_enqueue_block_editor_assets( array $args ): void {
  *
  * @access private
  *
- * @param array    $args Arguments.
- * @param \WP_Post $post Inserted or updated post object.
+ * @param array<string, mixed> $args Arguments.
+ * @param \WP_Post             $post Inserted or updated post object.
  */
 function _cb_rest_after_insert( array $args, \WP_Post $post ): void {
 	$from = get_post_meta( $post->ID, PMK_DATE_FROM, true );
@@ -291,7 +294,7 @@ function _cb_rest_after_insert( array $args, \WP_Post $post ): void {
 /**
  * Sets duration picker.
  *
- * @param array $args Arguments.
+ * @param array<string, mixed> $args Arguments.
  */
 function _set_duration_picker( array $args ): void {
 	if ( ! \wpinc\is_admin_post_type( $args['post_type'] ) ) {
@@ -351,7 +354,7 @@ function set_admin_column( string $post_type, bool $add_cat, bool $add_tag ): vo
 			}
 			$cs   = add_duration_column( $post_type, $cs );
 			$cs[] = 'date';
-			set_list_table_column( $post_type, $cs );
+			\wpinc\post\set_list_table_column( $post_type, $cs );
 		}
 	);
 }
@@ -359,9 +362,9 @@ function set_admin_column( string $post_type, bool $add_cat, bool $add_tag ): vo
 /**
  * Adds event duration columns.
  *
- * @param string $post_type Post type.
- * @param array  $cs        Columns.
- * @return array Added columns.
+ * @param string                             $post_type Post type.
+ * @param array<array<string, mixed>|string> $cs        Columns.
+ * @return array<array<string, mixed>|string> Added columns.
  */
 function add_duration_column( string $post_type, array $cs = array() ): array {
 	$pto       = get_post_type_object( $post_type );
@@ -394,7 +397,11 @@ function _filter_date_val( string $val ): string {
 	if ( empty( $val ) ) {
 		return '';
 	}
-	return esc_attr( gmdate( get_option( 'date_format' ), strtotime( $val ) ) );
+	$t = strtotime( $val );
+	if ( false === $t ) {
+		return '';
+	}
+	return esc_attr( gmdate( get_option( 'date_format' ), $t ) );
 }
 
 
@@ -404,10 +411,10 @@ function _filter_date_val( string $val ): string {
 /**
  * Formats duration date.
  *
- * @param int    $post_id       Post ID.
- * @param array  $formats       Array of duration formats.
- * @param string $date_format   Date format.
- * @param bool   $do_translate  Whether to translate.
+ * @param int                   $post_id       Post ID.
+ * @param array<string, string> $formats       Array of duration formats.
+ * @param string                $date_format   Date format.
+ * @param bool                  $do_translate  Whether to translate.
  * @return string Formatted duration.
  */
 function format_duration( int $post_id, array $formats, string $date_format, bool $do_translate ): string {
@@ -444,7 +451,7 @@ function format_duration( int $post_id, array $formats, string $date_format, boo
  * @return string[] Date components.
  */
 function _split_date_string( string $str, string $df, bool $do_translate ): array {
-	$fd = $str ? explode( "\t", mysql2date( $df, $str, $do_translate ) ) : array();
+	$fd = $str ? explode( "\t", (string) mysql2date( $df, $str, $do_translate ) ) : array();
 	return array_pad( $fd, 4, '' );
 }
 
@@ -452,7 +459,7 @@ function _split_date_string( string $str, string $df, bool $do_translate ): arra
  * Retrieves duration date.
  *
  * @param int $post_id Post ID.
- * @return array Array of duration dates.
+ * @return array<string, mixed> Array of duration dates.
  */
 function _get_duration_dates( int $post_id ): array {
 	$from_raw = get_post_meta( $post_id, PMK_DATE_FROM, true );

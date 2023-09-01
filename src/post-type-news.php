@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-02-28
+ * @version 2023-08-29
  */
 
 namespace wpinc\post\news;
@@ -15,10 +15,10 @@ require_once __DIR__ . '/list-table-column.php';
 /**
  * Registers news-like post type.
  *
- * @param string $post_type Post type.
- * @param string $slug      Parma struct base.
- * @param array  $labels    Labels.
- * @param array  $args      Arguments for register_post_type().
+ * @param string                $post_type Post type.
+ * @param string                $slug      Parma struct base.
+ * @param array<string, string> $labels    Labels.
+ * @param array<string, mixed>  $args      Arguments for register_post_type().
  */
 function register_post_type( string $post_type = 'news', string $slug = '', array $labels = array(), array $args = array() ): void {
 	if ( empty( $slug ) ) {
@@ -63,7 +63,7 @@ function set_admin_column( string $post_type, bool $add_cat, bool $add_tag ): vo
 				);
 			}
 			$cs[] = 'date';
-			set_list_table_column( $post_type, $cs );
+			\wpinc\post\set_list_table_column( $post_type, $cs );
 		}
 	);
 }

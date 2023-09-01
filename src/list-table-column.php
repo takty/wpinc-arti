@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-02-21
+ * @version 2023-09-01
  */
 
 namespace wpinc\post;
@@ -68,7 +68,7 @@ function enable_menu_order_column( ?int $pos = null ): void {
 		return;
 	}
 	$pt = _get_current_post_type();
-	if ( ! post_type_supports( $pt, 'page-attributes' ) ) {
+	if ( ! $pt || ! post_type_supports( $pt, 'page-attributes' ) ) {
 		return;
 	}
 	add_filter(
@@ -98,7 +98,7 @@ function enable_menu_order_column( ?int $pos = null ): void {
 			if ( 'order' === $col_name ) {
 				$post = get_post( $post_id );
 				if ( $post ) {
-					echo esc_attr( $post->menu_order );
+					echo esc_attr( (string) $post->menu_order );
 				}
 			}
 		},
@@ -121,18 +121,18 @@ function enable_menu_order_column( ?int $pos = null ): void {
 /**
  * Remove a portion of the array and replace it with key-value pairs.
  *
- * @param array    $array  The input array.
- * @param int      $offset Offset.
- * @param int|null $length Length.
- * @param array    $pairs  Key-value pairs.
- * @return array Array consisting of the extracted elements.
+ * @param array<string, mixed>        $array  The input array.
+ * @param int                         $offset Offset.
+ * @param int|null                    $length Length.
+ * @param array<array{string, mixed}> $pairs  Key-value pairs.
+ * @return array<string, mixed> Array consisting of the extracted elements.
  */
 function _splice_key_value( array $array, int $offset, ?int $length = null, array $pairs = array() ): array {
 	$kvs = array();
 	foreach ( $array as $key => $val ) {
 		$kvs[] = array( $key, $val );
 	}
-	array_splice( $kvs, $offset, $length, $pairs );
+	array_splice( $kvs, $offset, $length ?? count( $kvs ), $pairs );
 	$new = array();
 	foreach ( $kvs as $kv ) {
 		$new[ $kv[0] ] = $kv[1];
@@ -142,8 +142,10 @@ function _splice_key_value( array $array, int $offset, ?int $length = null, arra
 
 /**
  * Gets current post type.
+ *
+ * @return string|null Post type.
  */
-function _get_current_post_type() {
+function _get_current_post_type(): ?string {
 	global $post, $typenow, $current_screen;
 
 	if ( $post && $post->post_type ) {
@@ -192,8 +194,8 @@ function _get_current_post_type() {
  *     ),
  * )
  *
- * @param string $post_type Post type.
- * @param array  $columns   Columns.
+ * @param string                                  $post_type Post type.
+ * @param array<int, array<string, mixed>|string> $columns   Columns.
  */
 function set_list_table_column( string $post_type, array $columns ): void {
 	global $pagenow;
@@ -242,7 +244,10 @@ function set_list_table_column( string $post_type, array $columns ): void {
 				if ( taxonomy_exists( $c['taxonomy'] ) ) {
 					$name = "taxonomy-{$c['taxonomy']}";
 					if ( empty( $label ) ) {
-						$label = get_taxonomy( $c['taxonomy'] )->labels->name;
+						$tx = get_taxonomy( $c['taxonomy'] );
+						if ( $tx ) {
+							$label = $tx->labels->name;
+						}
 					}
 				}
 			} elseif ( isset( $c['name'] ) ) {
@@ -258,7 +263,10 @@ function set_list_table_column( string $post_type, array $columns ): void {
 			}
 		} else {
 			if ( taxonomy_exists( $c ) ) {
-				$cols[ "taxonomy-$c" ] = get_taxonomy( $c )->labels->name;
+				$tx = get_taxonomy( $c );
+				if ( $tx ) {
+					$cols[ "taxonomy-$c" ] = $tx->labels->name;
+				}
 			} else {
 				$cols[ $c ] = $def_cols[ $c ];
 			}

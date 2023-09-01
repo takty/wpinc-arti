@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2022-06-17
+ * @version 2023-08-31
  */
 
 namespace wpinc\post;
@@ -14,10 +14,10 @@ require_once __DIR__ . '/query.php';
 /**
  * Expands multiple entries.
  *
- * @param array       $ids  Post IDs.
- * @param string      $slug The slug name for the generic template.
- * @param string|null $name (Optional) The name of the specialized template. Default null.
- * @param array       $args (Optional) Additional arguments passed to the template. Default array().
+ * @param array<int|string> $ids  Post IDs.
+ * @param string            $slug The slug name for the generic template.
+ * @param string|null       $name (Optional) The name of the specialized template. Default null.
+ * @param array<mixed>      $args (Optional) Additional arguments passed to the template. Default array().
  */
 function expand_entries( array $ids, string $slug, ?string $name = null, array $args = array() ): void {
 	$ids = array_map( 'intval', $ids );
@@ -28,10 +28,10 @@ function expand_entries( array $ids, string $slug, ?string $name = null, array $
 /**
  * Expands multiple entries with titles.
  *
- * @param array       $id_to_title Array of post IDs to their titles.
- * @param string      $slug        The slug name for the generic template.
- * @param string|null $name        (Optional) The name of the specialized template. Default null.
- * @param array       $args        (Optional) Additional arguments passed to the template. Default array().
+ * @param array<int|string, string> $id_to_title Array of post IDs to their titles.
+ * @param string                    $slug        The slug name for the generic template.
+ * @param string|null               $name        (Optional) The name of the specialized template. Default null.
+ * @param array<mixed>              $args        (Optional) Additional arguments passed to the template. Default array().
  */
 function expand_entries_with_titles( array $id_to_title, string $slug, ?string $name = null, array $args = array() ): void {
 	$id2t = array();
@@ -50,8 +50,8 @@ function expand_entries_with_titles( array $id_to_title, string $slug, ?string $
  *
  * @access private
  *
- * @param array $ids Post IDs.
- * @return array Pages.
+ * @param int[] $ids Post IDs.
+ * @return \WP_Post[] Pages.
  */
 function _get_pages_by_ids( array $ids ): array {
 	$ps = get_posts(
