@@ -4,13 +4,20 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-08-31
+ * @version 2023-11-04
  */
+
+declare(strict_types=1);
 
 namespace wpinc\post;
 
+require_once __DIR__ . '/assets/date.php';
+require_once __DIR__ . '/post-type-event.php';
+
 /**
  * Displays the post loop.
+ *
+ * @global \WP_Post|null $post
  *
  * @param \WP_Post[]   $ps   Array of post objects.
  * @param string       $slug The slug name for the generic template.
@@ -34,6 +41,8 @@ function the_loop( array $ps, string $slug, string $name = null, array $args = a
 
 /**
  * Displays each page with custom page template.
+ *
+ * @global \WP_Post|null $post
  *
  * @param \WP_Post[]   $ps   Array of post objects.
  * @param string       $slug The slug name for the generic template.
@@ -88,7 +97,9 @@ function add_tax_query( string $taxonomy, $term_slug_s, array $args = array() ):
 	if ( ! is_array( $term_slug_s ) ) {
 		$term_slug_s = array_map( '\trim', explode( ',', $term_slug_s ) );
 	}
-	$args['tax_query']   = $args['tax_query'] ?? array();  // phpcs:ignore
+	if ( ! isset( $args['tax_query'] ) || ! is_array( $args['tax_query'] ) ) {
+		$args['tax_query'] = array();  // phpcs:ignore
+	}
 	$args['tax_query'][] = array(
 		'taxonomy' => $taxonomy,
 		'field'    => 'slug',
@@ -110,7 +121,9 @@ function add_tax_query_with_term_of( string $taxonomy, $post, array $args = arra
 	if ( ! is_array( $ts ) ) {
 		return $args;
 	}
-	$args['tax_query']   = $args['tax_query'] ?? array();  // phpcs:ignore
+	if ( ! isset( $args['tax_query'] ) || ! is_array( $args['tax_query'] ) ) {
+		$args['tax_query'] = array();  // phpcs:ignore
+	}
 	$args['tax_query'][] = array(
 		'taxonomy' => $taxonomy,
 		'field'    => 'slug',
@@ -126,7 +139,9 @@ function add_tax_query_with_term_of( string $taxonomy, $post, array $args = arra
  * @return array<string, mixed> Arguments.
  */
 function add_custom_sticky_query( array $args = array() ): array {
-	$args['meta_query']   = $args['meta_query'] ?? array();  // phpcs:ignore
+	if ( ! isset( $args['meta_query'] ) || ! is_array( $args['meta_query'] ) ) {
+		$args['meta_query'] = array();  // phpcs:ignore
+	}
 	$args['meta_query'][] = array(
 		'key'   => '_sticky',
 		'value' => '1',
@@ -147,7 +162,11 @@ function add_upcoming_post_query( int $offset_year = 1, int $offset_month = 0, i
 	$today = create_date_string_of_today();
 	$limit = create_date_string_of_today( $offset_year, $offset_month, $offset_day );
 
-	$qs   = $args['meta_query'] ?? array();
+	if ( ! isset( $args['meta_query'] ) || ! is_array( $args['meta_query'] ) ) {
+		$qs = array();
+	} else {
+		$qs = $args['meta_query'];  // phpcs:ignore
+	}
 	$qs[] = array(
 		'key'     => event\PMK_DATE_TO,
 		'value'   => $today,
@@ -206,7 +225,7 @@ function add_child_page_query( ?int $parent_id = null, array $args = array() ): 
  */
 function add_sibling_page_query( ?int $sibling_id = null, array $args = array() ): array {
 	$post      = get_post( $sibling_id ?? (int) get_the_ID() );
-	$parent_id = $post ? $post->post_parent : 0;
+	$parent_id = ( $post instanceof \WP_Post ) ? $post->post_parent : 0;
 	$args      = add_page_query( $args );
 	return $args + array( 'post_parent' => $parent_id );
 }

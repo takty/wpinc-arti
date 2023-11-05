@@ -4,13 +4,17 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-09-01
+ * @version 2023-11-04
  */
+
+declare(strict_types=1);
 
 namespace wpinc\post;
 
 /**
  * Makes custom date sortable.
+ *
+ * @global \wpdb $wpdb
  *
  * @param string $post_type Post type.
  * @param string $slug      Slug.
@@ -95,13 +99,15 @@ function make_custom_date_sortable( string $post_type, string $slug, string $met
 /**
  * Enables adjacent post links by custom date
  *
+ * @global \wpdb $wpdb
+ *
  * @param string $post_type Post type.
  * @param string $meta_key  Meta key.
  */
 function enable_custom_date_adjacent_post_link( string $post_type, string $meta_key ): void {
 	add_filter(
 		'get_next_post_join',
-		function ( $join, $in_same_term, $excluded_terms, $tx, $post ) use ( $post_type ) {
+		function ( $join, $_in_same_term, $_excluded_terms, $_tx, $post ) use ( $post_type ) {
 			global $wpdb;
 			if ( $post->post_type === $post_type ) {
 				$join .= " INNER JOIN $wpdb->postmeta ON ( p.ID = $wpdb->postmeta.post_id )";
@@ -113,10 +119,11 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 	);
 	add_filter(
 		'get_next_post_where',
-		function ( $where, $in_same_term, $excluded_terms, $tx, $post ) use ( $post_type, $meta_key ) {
+		function ( $where, $_in_same_term, $_excluded_terms, $_tx, $post ) use ( $post_type, $meta_key ) {
 			global $wpdb;
 			if ( $post->post_type === $post_type ) {
 				$m     = get_post_meta( $post->ID, $meta_key, true );
+				$m     = is_string( $m ) ? $m : '';
 				$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( $wpdb->postmeta.meta_key = '$meta_key' ) AND ( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value > '$m' ) ) AND", $where ) ?? $where;
 			}
 			return $where;
@@ -139,7 +146,7 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 
 	add_filter(
 		'get_previous_post_join',
-		function ( $join, $in_same_term, $excluded_terms, $tx, $post ) use ( $post_type ) {
+		function ( $join, $_in_same_term, $_excluded_terms, $_tx, $post ) use ( $post_type ) {
 			global $wpdb;
 			if ( $post->post_type === $post_type ) {
 				$join .= " INNER JOIN $wpdb->postmeta ON ( p.ID = $wpdb->postmeta.post_id )";
@@ -151,10 +158,11 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 	);
 	add_filter(
 		'get_previous_post_where',
-		function ( $where, $in_same_term, $excluded_terms, $tx, $post ) use ( $post_type, $meta_key ) {
+		function ( $where, $_in_same_term, $_excluded_terms, $_tx, $post ) use ( $post_type, $meta_key ) {
 			global $wpdb;
 			if ( $post->post_type === $post_type ) {
 				$m     = get_post_meta( $post->ID, $meta_key, true );
+				$m     = is_string( $m ) ? $m : '';
 				$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( $wpdb->postmeta.meta_key = '$meta_key' ) AND ( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value < '$m' ) ) AND", $where ) ?? $where;
 			}
 			return $where;

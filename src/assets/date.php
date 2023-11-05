@@ -4,13 +4,17 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-08-31
+ * @version 2023-11-02
  */
+
+declare(strict_types=1);
 
 namespace wpinc\post;
 
 /**
  * Creates date string of today.
+ *
+ * @psalm-suppress TypeDoesNotContainType
  *
  * @param int    $offset_year  Offset of year. Default 0.
  * @param int    $offset_month Offset of month. Default 0.

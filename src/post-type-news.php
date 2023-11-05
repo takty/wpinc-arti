@@ -4,8 +4,10 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-08-29
+ * @version 2023-11-02
  */
+
+declare(strict_types=1);
 
 namespace wpinc\post\news;
 
@@ -14,6 +16,8 @@ require_once __DIR__ . '/list-table-column.php';
 
 /**
  * Registers news-like post type.
+ *
+ * @psalm-suppress ArgumentTypeCoercion
  *
  * @param string                $post_type Post type.
  * @param string                $slug      Parma struct base.
@@ -34,7 +38,7 @@ function register_post_type( string $post_type = 'news', string $slug = '', arra
 		'supports'      => array( 'title', 'editor', 'revisions', 'thumbnail', 'custom-fields' ),
 		'labels'        => $labels + array( 'name' => _x( 'News', 'post type news', 'wpinc_post' ) ),
 	);
-	\register_post_type( $post_type, $args );
+	\register_post_type( $post_type, $args );  // @phpstan-ignore-line
 	\wpinc\post\add_rewrite_rules( $post_type, $slug, 'date', false );
 }
 

@@ -4,14 +4,17 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-08-31
+ * @version 2023-11-04
  */
+
+declare(strict_types=1);
 
 namespace wpinc\post\event;
 
 require_once __DIR__ . '/assets/asset-url.php';
 require_once __DIR__ . '/assets/admin-current-post.php';
 require_once __DIR__ . '/assets/date.php';
+require_once __DIR__ . '/custom-date.php';
 require_once __DIR__ . '/post-type.php';
 require_once __DIR__ . '/list-table-column.php';
 
@@ -19,10 +22,17 @@ const PMK_DATE      = '_date';
 const PMK_DATE_FROM = '_date_from';
 const PMK_DATE_TO   = '_date_to';
 
-/**
+/** phpcs:ignore
  * Registers event-like post type.
  *
- * @param array<string, mixed> $args Arguments.
+ * @psalm-suppress ArgumentTypeCoercion
+ * phpcs:ignore
+ * @param array{
+ *     post_type?  : string,
+ *     slug?       : string,
+ *     do_autofill?: bool,
+ *     labels?     : array{ date: string, date_from: string, date_to: string }
+ * } $args Arguments.
  */
 function register_post_type( array $args = array() ): void {
 	$def_opts = array(
@@ -55,7 +65,7 @@ function register_post_type( array $args = array() ): void {
 	if ( empty( $args['slug'] ) ) {
 		$args['slug'] = $args['post_type'];
 	}
-	\register_post_type( $args['post_type'], array_diff_key( $args, $def_opts ) );
+	\register_post_type( $args['post_type'], array_diff_key( $args, $def_opts ) );  // @phpstan-ignore-line
 	\wpinc\post\add_rewrite_rules( $args['post_type'], $args['slug'], 'date', false );
 
 	_set_custom_date_order( $args['post_type'], $args['order_by'] );
@@ -69,7 +79,7 @@ function register_post_type( array $args = array() ): void {
 				'type'          => 'string',
 				'single'        => true,
 				'show_in_rest'  => true,
-				'auth_callback' => function() {
+				'auth_callback' => function () {
 					return current_user_can( 'edit_posts' );
 				},
 			)
@@ -78,12 +88,17 @@ function register_post_type( array $args = array() ): void {
 	_initialize_hooks( $args );
 }
 
-/**
+/** phpcs:ignore
  * Initializes hooks.
  *
  * @access private
- *
- * @param array<string, mixed> $args Arguments.
+ * @global string $pagenow
+ * phpcs:ignore
+ * @param array{
+ *     post_type  : string,
+ *     do_autofill: bool,
+ *     labels     : array{ date: string, date_from: string, date_to: string }
+ * } $args Arguments.
  */
 function _initialize_hooks( array $args ): void {
 	if ( ! is_admin() ) {
@@ -97,8 +112,8 @@ function _initialize_hooks( array $args ): void {
 		// For adding duration state to the post classes.
 		add_filter(
 			'post_class',
-			function ( array $classes, array $class, int $post_id ) use ( $args ) {
-				return _cb_post_class( $classes, $class, $post_id, $args['post_type'] );
+			function ( array $classes, array $cls, int $post_id ) use ( $args ) {
+				return _cb_post_class( $classes, $cls, $post_id, $args['post_type'] );
 			},
 			10,
 			3
@@ -128,7 +143,7 @@ function _initialize_hooks( array $args ): void {
 	}
 	add_action(
 		'rest_after_insert_' . $args['post_type'],
-		function ( $post ) use ( $args ) {
+		function ( \WP_Post $post ) use ( $args ) {
 			_cb_rest_after_insert( $args, $post );
 		}
 	);
@@ -175,12 +190,24 @@ function _replace_date( string $post_type, string $type ): void {
 	if ( $key ) {
 		add_filter(
 			'get_the_date',
-			function ( $the_date, $d, $post ) use ( $post_type, $key ) {
+			function ( $the_date, string $df, \WP_Post $post ) use ( $post_type, $key ) {
 				if ( $post->post_type !== $post_type ) {
 					return $the_date;
 				}
+				if ( empty( $df ) ) {
+					$df = get_option( 'date_format' );
+					if ( ! is_string( $df ) ) {
+						$df = '';
+					}
+				}
 				$date = get_post_meta( $post->ID, $key, true );
-				return mysql2date( empty( $d ) ? get_option( 'date_format' ) : $d, $date );
+				if ( is_string( $date ) ) {
+					$date = mysql2date( $df, $date );
+					if ( $date ) {
+						return $date;
+					}
+				}
+				return $the_date;
 			},
 			10,
 			3
@@ -196,8 +223,8 @@ function _replace_date( string $post_type, string $type ): void {
  * @return string[] Classes.
  */
 function _cb_body_class( array $classes, string $post_type ): array {
+	global $wp_query;
 	if ( is_singular( $post_type ) ) {
-		global $wp_query;
 		$post      = $wp_query->get_queried_object();
 		$classes[] = _get_duration_state( $post->ID );
 	}
@@ -210,12 +237,12 @@ function _cb_body_class( array $classes, string $post_type ): array {
  * @access private
  *
  * @param string[] $classes   An array of post class names.
- * @param string[] $class     An array of additional class names added to the post.
+ * @param string[] $_class    An array of additional class names added to the post.
  * @param int      $post_id   The post ID.
  * @param string   $post_type Post type.
  * @return string[] Classes.
  */
-function _cb_post_class( array $classes, array $class, int $post_id, string $post_type ): array {
+function _cb_post_class( array $classes, array $_class, int $post_id, string $post_type ): array {
 	if ( get_post_type( $post_id ) === $post_type ) {
 		$classes[] = _get_duration_state( $post_id );
 	}
@@ -226,12 +253,19 @@ function _cb_post_class( array $classes, array $class, int $post_id, string $pos
 // ---------------------------------------- Callback Functions for Block Editor.
 
 
-/**
+/** phpcs:ignore
  * Callback function for 'enqueue_block_editor_assets' action.
  *
- * @param array<string, mixed> $args Arguments.
- *
  * @access private
+ * phpcs:ignore
+ * @param array{
+ *     post_type: string,
+ *     labels   : array{
+ *         date     : string,
+ *         date_from: string,
+ *         date_to  : string,
+ *     }
+ * } $args Arguments.
  */
 function _cb_enqueue_block_editor_assets( array $args ): void {
 	$cs = get_current_screen();
@@ -259,18 +293,19 @@ function _cb_enqueue_block_editor_assets( array $args ): void {
 	}
 }
 
-/**
+/** phpcs:ignore
  * Callback function for 'rest_after_insert_{$post_type}' action.
  *
  * @access private
- *
- * @param array<string, mixed> $args Arguments.
- * @param \WP_Post             $post Inserted or updated post object.
+ * @psalm-suppress InvalidDocblock
+ * phpcs:ignore
+ * @param array{ do_autofill: bool } $args Arguments.
+ * @param \WP_Post                   $post Inserted or updated post object.
  */
 function _cb_rest_after_insert( array $args, \WP_Post $post ): void {
 	$from = get_post_meta( $post->ID, PMK_DATE_FROM, true );
 	$to   = get_post_meta( $post->ID, PMK_DATE_TO, true );
-	if ( $from && $to ) {
+	if ( is_string( $from ) && is_string( $to ) ) {
 		$from_val = (int) str_replace( '-', '', $from );
 		$to_val   = (int) str_replace( '-', '', $to );
 		if ( $to_val < $from_val ) {
@@ -291,10 +326,22 @@ function _cb_rest_after_insert( array $args, \WP_Post $post ): void {
 // -------------------------------------- Callback Functions for Classic Editor.
 
 
-/**
+/** phpcs:ignore
  * Sets duration picker.
  *
- * @param array<string, mixed> $args Arguments.
+ * @psalm-suppress UndefinedFunction, InvalidDocblock
+ * phpcs:ignore
+ * @param array{
+ *     post_type  : string,
+ *     do_autofill: bool,
+ *     labels     : array{
+ *         date     : string,
+ *         date_from: string,
+ *         date_to  : string,
+ *     },
+ *     url_to?    : string,
+ *     locale?    : string
+ * } $args Arguments.
  */
 function _set_duration_picker( array $args ): void {
 	if ( ! \wpinc\is_admin_post_type( $args['post_type'] ) ) {
@@ -307,9 +354,12 @@ function _set_duration_picker( array $args ): void {
 		'label_to'    => $args['labels']['date_to'],
 	);
 	if ( isset( $args['url_to'] ) ) {
-		$args['url_to'] = untrailingslashit( $args['url_to'] ) . '/assets';
+		$dp_args['url_to'] = $args['url_to'];
 	}
-	\wpinc\dia\duration_picker\initialize( $args );
+	if ( isset( $args['locale'] ) ) {
+		$dp_args['locale'] = $args['locale'];
+	}
+	\wpinc\dia\duration_picker\initialize( $dp_args );
 	add_action(
 		'add_meta_boxes',
 		function () use ( $args, $dp_args ) {
@@ -330,6 +380,8 @@ function _set_duration_picker( array $args ): void {
 
 /**
  * Sets columns of list table.
+ *
+ * @psalm-suppress ArgumentTypeCoercion
  *
  * @param string $post_type Post type.
  * @param bool   $add_cat   Whether to add {$post_type}_category taxonomy.
@@ -354,7 +406,7 @@ function set_admin_column( string $post_type, bool $add_cat, bool $add_tag ): vo
 			}
 			$cs   = add_duration_column( $post_type, $cs );
 			$cs[] = 'date';
-			\wpinc\post\set_list_table_column( $post_type, $cs );
+			\wpinc\post\set_list_table_column( $post_type, $cs );  // @phpstan-ignore-line
 		}
 	);
 }
@@ -401,7 +453,9 @@ function _filter_date_val( string $val ): string {
 	if ( false === $t ) {
 		return '';
 	}
-	return esc_attr( gmdate( get_option( 'date_format' ), $t ) );
+	$df = get_option( 'date_format' );
+	$df = is_string( $df ) ? $df : '';
+	return esc_attr( gmdate( $df, $t ) );
 }
 
 
@@ -459,11 +513,18 @@ function _split_date_string( string $str, string $df, bool $do_translate ): arra
  * Retrieves duration date.
  *
  * @param int $post_id Post ID.
- * @return array<string, mixed> Array of duration dates.
+ * @return array{
+ *     from_raw: string,
+ *     to_raw  : string,
+ *     from_ns : string[]|null,
+ *     to_ns   : string[]|null
+ * } Array of duration dates.
  */
 function _get_duration_dates( int $post_id ): array {
 	$from_raw = get_post_meta( $post_id, PMK_DATE_FROM, true );
+	$from_raw = is_string( $from_raw ) ? $from_raw : '';
 	$to_raw   = get_post_meta( $post_id, PMK_DATE_TO, true );
+	$to_raw   = is_string( $to_raw ) ? $to_raw : '';
 	$from_ns  = empty( $from_raw ) ? null : explode( '-', $from_raw );
 	$to_ns    = empty( $to_raw ) ? null : explode( '-', $to_raw );
 	return compact( 'from_raw', 'to_raw', 'from_ns', 'to_ns' );
@@ -478,8 +539,8 @@ function _get_duration_dates( int $post_id ): array {
 function _get_duration_state( int $post_id ): string {
 	$from_raw = get_post_meta( $post_id, PMK_DATE_FROM, true );
 	$to_raw   = get_post_meta( $post_id, PMK_DATE_TO, true );
-	$from_ns  = empty( $from_raw ) ? null : explode( '-', $from_raw );
-	$to_ns    = empty( $to_raw ) ? null : explode( '-', $to_raw );
+	$from_ns  = ( ! is_string( $from_raw ) || empty( $from_raw ) ) ? null : explode( '-', $from_raw );
+	$to_ns    = ( ! is_string( $to_raw ) || empty( $to_raw ) ) ? null : explode( '-', $to_raw );
 	$state    = '';
 
 	if ( $from_ns ) {
@@ -494,7 +555,7 @@ function _get_duration_state( int $post_id ): string {
 			} elseif ( '>' === $t_end ) {
 				$state = 'finished';
 			}
-		} else {
+		} else {  // phpcs:ignore
 			if ( '<' === $t_from ) {
 				$state = 'upcoming';
 			} elseif ( '>' === $t_from ) {

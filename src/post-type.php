@@ -4,8 +4,10 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-08-31
+ * @version 2023-11-04
  */
+
+declare(strict_types=1);
 
 namespace wpinc\post;
 
@@ -60,6 +62,8 @@ function add_post_type_rewrite_rules( string $post_type, string $slug = '', bool
  * Adds filter for post type links.
  * For making pretty link of custom post types.
  *
+ * @global \WP_Rewrite $wp_rewrite
+ *
  * @param string $post_type    Post type.
  * @param bool   $by_post_name Whether to use post name for URL.
  */
@@ -93,6 +97,8 @@ function add_post_type_link_filter( string $post_type, bool $by_post_name = fals
  * Adds archive rewrite rules.
  * Need to set 'has_archive => true' when registering the post type.
  *
+ * @global \WP_Rewrite $wp_rewrite
+ *
  * @param string $post_type Post type.
  * @param string $slug      Archive slug.
  */
@@ -112,6 +118,8 @@ function add_archive_rewrite_rules( string $post_type, string $slug = '' ): void
 
 /**
  * Adds archive link filter.
+ *
+ * @global \WP_Rewrite $wp_rewrite
  *
  * @param string $post_type Post type.
  * @param string $slug      Archive slug.
@@ -154,6 +162,8 @@ function add_date_archive_rewrite_rules( string $post_type, string $slug = '', s
 /**
  * Adds date archive link filter.
  *
+ * @global \WP_Rewrite $wp_rewrite
+ *
  * @param string $post_type Post type.
  * @param string $slug      Archive slug.
  * @param string $date_slug Date slug.
@@ -164,7 +174,7 @@ function add_date_archive_link_filter( string $post_type, string $slug = '', str
 
 	add_filter(
 		'get_archives_link',
-		function ( $link_html, $url, $text, $format, $before, $after ) use ( $post_type, $slug, $date_slug ) {
+		function ( $link_html, $url ) use ( $post_type, $slug, $date_slug ) {
 			$url_post_type = get_query_arg( 'post_type', $url );
 			if ( $post_type !== $url_post_type ) {
 				return $link_html;
@@ -179,7 +189,7 @@ function add_date_archive_link_filter( string $post_type, string $slug = '', str
 			return str_replace( $url, $new_url, $link_html );
 		},
 		10,
-		6
+		2
 	);
 }
 

@@ -4,8 +4,10 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-08-31
+ * @version 2023-11-02
  */
+
+declare(strict_types=1);
 
 namespace wpinc\post;
 
@@ -35,7 +37,7 @@ function enable_custom_excerpt( int $length = 220, string $more = '...' ): void 
 	);
 	add_filter(
 		'wp_trim_words',
-		function ( string $text, int $num_words, string $more, string $original_text ) {
+		function ( string $_text, int $num_words, string $more, string $original_text ) {
 			$allowed_html = array(
 				'sub' => array(),
 				'sup' => array(),
@@ -58,15 +60,20 @@ function enable_custom_excerpt( int $length = 220, string $more = '...' ): void 
 // -----------------------------------------------------------------------------
 
 
-/**
+/** phpcs:ignore
  * Checks whether the string contains any title.
  *
- * @param string|null          $str  String.
- * @param array<string, mixed> $args {
+ * @param string|null $str  String.
+ * phpcs:ignore
+ * @param array{
+ *     post?    : int|\WP_Post|null,
+ *     meta_key?: string,
+ * } $args Arguments.
+ * $args {
  *     Arguments.
  *
- *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
- *     @type string                  'meta_key' (Optional) Post meta key.
+ *     @type int|\WP_Post|null 'post'     WP_Post instance or Post ID/object. Default null.
+ *     @type string            'meta_key' (Optional) Post meta key.
  * }
  * @return bool Whether the string contains any title.
  */
@@ -77,15 +84,20 @@ function has_title( ?string $str = null, $args = array() ): bool {
 	return ! empty( trim( $str ) );
 }
 
-/**
+/** phpcs:ignore
  * Checks whether the string contains any content.
  *
- * @param string|null          $str  String.
- * @param array<string, mixed> $args {
+ * @param string|null $str  String.
+ * phpcs:ignore
+ * @param array{
+ *     post?    : int|\WP_Post|null,
+ *     meta_key?: string,
+ * } $args Arguments.
+ * $args {
  *     Arguments.
  *
- *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
- *     @type string                  'meta_key' (Optional) Post meta key.
+ *     @type int|\WP_Post|null 'post'     WP_Post instance or Post ID/object. Default null.
+ *     @type string            'meta_key' (Optional) Post meta key.
  * }
  * @return bool Whether the string contains any content.
  */
@@ -107,22 +119,33 @@ function has_content( ?string $str = null, $args = array() ): bool {
 // -----------------------------------------------------------------------------
 
 
-/**
+/** phpcs:ignore
  * Display the current post title with optional markup.
  *
- * @param string               $before (Optional) Markup to prepend to the title. Default ''.
- * @param string               $after  (Optional) Markup to append to the title. Default ''.
- * @param array<string, mixed> $args {
+ * @param string $before (Optional) Markup to prepend to the title. Default ''.
+ * @param string $after  (Optional) Markup to append to the title. Default ''.
+ * phpcs:ignore
+ * @param array{
+ *     post?    : int|\WP_Post|null,
+ *     meta_key?: string,
+ *     short?   : int,
+ *     long?    : int,
+ *     word?    : string,
+ *     line?    : string,
+ *     filter?  : callable,
+ *     small?   : bool,
+ * } $args Arguments.
+ * $args {
  *     Arguments.
  *
- *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
- *     @type string                  'meta_key' (Optional) Post meta key.
- *     @type int                     'short'    Length at which the title is considered short. Default 8.
- *     @type int                     'long'     Length at which the title is considered long. Default 32.
- *     @type string                  'word'     (For 'separate_text') Segment type: 'ja' or 'none'. Default 'none'.
- *     @type string                  'line'     (For 'separate_text') Line wrapping type: 'raw', 'br', 'span', 'div', or 'array'. Default 'div'.
- *     @type callable                'filter'   (For 'separate_text') Filter function.
- *     @type bool                    'small'    (For 'separate_text') Whether to handle 'small' elements.
+ *     @type int|\WP_Post|null 'post'     WP_Post instance or Post ID/object. Default null.
+ *     @type string            'meta_key' (Optional) Post meta key.
+ *     @type int               'short'    Length at which the title is considered short. Default 8.
+ *     @type int               'long'     Length at which the title is considered long. Default 32.
+ *     @type string            'word'     (For 'separate_text') Segment type: 'ja' or 'none'. Default 'none'.
+ *     @type string            'line'     (For 'separate_text') Line wrapping type: 'raw', 'br', 'span', 'div', or 'array'. Default 'div'.
+ *     @type callable          'filter'   (For 'separate_text') Filter function.
+ *     @type bool              'small'    (For 'separate_text') Whether to handle 'small' elements.
  * }
  */
 function the_title( string $before = '', string $after = '', array $args = array() ): void {
@@ -133,16 +156,21 @@ function the_title( string $before = '', string $after = '', array $args = array
 	echo process_title( $str, $before, $after, $args );  // phpcs:ignore
 }
 
-/**
+/** phpcs:ignore
  * Displays the post content.
  *
- * @param string|null          $more_link_text Content for when there is more text. Default: null.
- * @param bool                 $strip_teaser   Strip teaser content before the more text. Default: false.
- * @param array<string, mixed> $args {
+ * @param string|null $more_link_text Content for when there is more text. Default: null.
+ * @param bool        $strip_teaser   Strip teaser content before the more text. Default: false.
+ * phpcs:ignore
+ * @param array{
+ *     post?    : int|\WP_Post|null,
+ *     meta_key?: string,
+ * } $args Arguments.
+ * $args {
  *     Arguments.
  *
- *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
- *     @type string                  'meta_key' (Optional) Post meta key.
+ *     @type int|\WP_Post|null 'post'     WP_Post instance or Post ID/object. Default null.
+ *     @type string            'meta_key' (Optional) Post meta key.
  * }
  */
 function the_content( ?string $more_link_text = null, bool $strip_teaser = false, array $args = array() ): void {
@@ -154,13 +182,22 @@ function the_content( ?string $more_link_text = null, bool $strip_teaser = false
 // -----------------------------------------------------------------------------
 
 
-/**
+/** phpcs:ignore
  * Apply title filters to string.
  *
- * @param string               $str    String.
- * @param string               $before (Optional) Markup to prepend to the title. Default ''.
- * @param string               $after  (Optional) Markup to append to the title. Default ''.
- * @param array<string, mixed> $args {
+ * @param string $str    String.
+ * @param string $before (Optional) Markup to prepend to the title. Default ''.
+ * @param string $after  (Optional) Markup to append to the title. Default ''.
+ * phpcs:ignore
+ * @param array{
+ *     short? : int,
+ *     long?  : int,
+ *     word?  : string,
+ *     line?  : string,
+ *     filter?: callable,
+ *     small? : bool,
+ * } $args Arguments.
+ * $args {
  *     Arguments.
  *
  *     @type int      'short'  Length at which the title is considered short. Default 8.
@@ -210,14 +247,19 @@ function process_content( string $str ): string {
 // -----------------------------------------------------------------------------
 
 
-/**
+/** phpcs:ignore
  * Retrieves the post title.
  *
- * @param array<string, mixed> $args {
+ * phpcs:ignore
+ * @param array{
+ *     post?    : int|\WP_Post|null,
+ *     meta_key?: string,
+ * } $args Arguments.
+ * $args {
  *     Arguments.
  *
- *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
- *     @type string                  'meta_key' (Optional) Post meta key.
+ *     @type int|\WP_Post|null 'post'     WP_Post instance or Post ID/object. Default null.
+ *     @type string            'meta_key' (Optional) Post meta key.
  * }
  * @return string Post content.
  */
@@ -228,25 +270,33 @@ function get_the_title( array $args = array() ): string {
 	);
 	if ( is_string( $args['meta_key'] ) ) {
 		$post = get_post( $args['post'] );
-		if ( ! $post ) {
-			return '';
+		if ( $post instanceof \WP_Post ) {
+			$val = get_post_meta( $post->ID, $args['meta_key'], true );
+			if ( is_string( $val ) ) {
+				return $val;
+			}
 		}
-		return get_post_meta( $post->ID, $args['meta_key'], true );
+		return '';
 	} else {
-		return \get_the_title( $args['post'] );
+		return \get_the_title( $args['post'] ?? 0 );
 	}
 }
 
-/**
+/** phpcs:ignore
  * Retrieves the post content.
  *
- * @param string|null          $more_link_text Content for when there is more text. Default: null.
- * @param bool                 $strip_teaser   Strip teaser content before the more text. Default: false.
- * @param array<string, mixed> $args {
+ * @param string|null $more_link_text Content for when there is more text. Default: null.
+ * @param bool        $strip_teaser   Strip teaser content before the more text. Default: false.
+ * phpcs:ignore
+ * @param array{
+ *     post?    : int|\WP_Post|null,
+ *     meta_key?: string,
+ * } $args Arguments.
+ * $args {
  *     Arguments.
  *
- *     @type WP_Post|object|int|null 'post'     WP_Post instance or Post ID/object. Default null.
- *     @type string                  'meta_key' (Optional) Post meta key.
+ *     @type int|\WP_Post|null 'post'     WP_Post instance or Post ID/object. Default null.
+ *     @type string            'meta_key' (Optional) Post meta key.
  * }
  * @return string Post content.
  */
@@ -257,10 +307,13 @@ function get_the_content( ?string $more_link_text = null, bool $strip_teaser = f
 	);
 	if ( is_string( $args['meta_key'] ) ) {
 		$post = get_post( $args['post'] );
-		if ( ! $post ) {
-			return '';
+		if ( $post instanceof \WP_Post ) {
+			$val = get_post_meta( $post->ID, $args['meta_key'], true );
+			if ( is_string( $val ) ) {
+				return $val;
+			}
 		}
-		return get_post_meta( $post->ID, $args['meta_key'], true );
+		return '';
 	} else {
 		return \get_the_content( $more_link_text, $strip_teaser, $args['post'] );
 	}

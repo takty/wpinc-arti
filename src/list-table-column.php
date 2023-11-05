@@ -4,14 +4,18 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-09-01
+ * @version 2023-11-04
  */
+
+declare(strict_types=1);
 
 namespace wpinc\post;
 
 /**
  * Enables to show page slug column.
  * Call this in 'load-edit.php' or 'admin_init' action.
+ *
+ * @psalm-suppress HookNotFound
  *
  * @param int|null $pos (Optional) Column position.
  */
@@ -41,7 +45,7 @@ function enable_page_slug_column( ?int $pos = null ): void {
 		function ( $col_name, $post_id ) {
 			if ( 'slug' === $col_name ) {
 				$post = get_post( $post_id );
-				if ( $post ) {
+				if ( $post instanceof \WP_Post ) {
 					echo esc_attr( $post->post_name );
 				}
 			}
@@ -61,6 +65,8 @@ function enable_page_slug_column( ?int $pos = null ): void {
  * Enables to show menu order column.
  * Call this in 'load-edit.php' or 'admin_init' action.
  *
+ * @psalm-suppress HookNotFound
+ *
  * @param int|null $pos (Optional) Column position.
  */
 function enable_menu_order_column( ?int $pos = null ): void {
@@ -73,7 +79,7 @@ function enable_menu_order_column( ?int $pos = null ): void {
 	}
 	add_filter(
 		"manage_edit-{$pt}_columns",
-		function ( $cs ) use ( $pos ) {
+		function ( array $cs ) use ( $pos ) {
 			if ( ! isset( $cs['order'] ) ) {
 				if ( null === $pos ) {
 					$cs['order'] = __( 'Order', 'default' );
@@ -87,17 +93,17 @@ function enable_menu_order_column( ?int $pos = null ): void {
 	);
 	add_filter(
 		"manage_edit-{$pt}_sortable_columns",
-		function ( $cs ) {
+		function ( array $cs ) {
 			$cs['order'] = 'menu_order';
 			return $cs;
 		}
 	);
 	add_action(
 		"manage_{$pt}_posts_custom_column",
-		function ( $col_name, $post_id ) {
+		function ( string $col_name, int $post_id ) {
 			if ( 'order' === $col_name ) {
 				$post = get_post( $post_id );
-				if ( $post ) {
+				if ( $post instanceof \WP_Post ) {
 					echo esc_attr( (string) $post->menu_order );
 				}
 			}
@@ -121,15 +127,15 @@ function enable_menu_order_column( ?int $pos = null ): void {
 /**
  * Remove a portion of the array and replace it with key-value pairs.
  *
- * @param array<string, mixed>        $array  The input array.
+ * @param array<string, mixed>        $arr    The input array.
  * @param int                         $offset Offset.
  * @param int|null                    $length Length.
  * @param array<array{string, mixed}> $pairs  Key-value pairs.
  * @return array<string, mixed> Array consisting of the extracted elements.
  */
-function _splice_key_value( array $array, int $offset, ?int $length = null, array $pairs = array() ): array {
+function _splice_key_value( array $arr, int $offset, ?int $length = null, array $pairs = array() ): array {
 	$kvs = array();
-	foreach ( $array as $key => $val ) {
+	foreach ( $arr as $key => $val ) {
 		$kvs[] = array( $key, $val );
 	}
 	array_splice( $kvs, $offset, $length ?? count( $kvs ), $pairs );
@@ -143,6 +149,8 @@ function _splice_key_value( array $array, int $offset, ?int $length = null, arra
 /**
  * Gets current post type.
  *
+ * @global \WP_Post|null $post
+ *
  * @return string|null Post type.
  */
 function _get_current_post_type(): ?string {
@@ -154,7 +162,7 @@ function _get_current_post_type(): ?string {
 		return $typenow;
 	} elseif ( $current_screen && $current_screen->post_type ) {
 		return $current_screen->post_type;
-	} elseif ( is_admin() && isset( $_REQUEST['post_type'] ) ) {  // phpcs:ignore
+	} elseif ( is_admin() && isset( $_REQUEST['post_type'] ) && is_string( $_REQUEST['post_type'] ) ) {  // phpcs:ignore
 		return sanitize_key( $_REQUEST['post_type'] );  // phpcs:ignore
 	}
 	return null;
@@ -164,7 +172,7 @@ function _get_current_post_type(): ?string {
 // -----------------------------------------------------------------------------
 
 
-/**
+/** phpcs:ignore
  * Sets list table columns for admin.
  * Example,
  * array(
@@ -194,10 +202,18 @@ function _get_current_post_type(): ?string {
  *     ),
  * )
  *
- * @param string                                  $post_type Post type.
- * @param array<int, array<string, mixed>|string> $columns   Columns.
+ * @global string $pagenow
+ *
+ * @param string $post_type Post type.
+ * phpcs:ignore
+ * @param (
+ *     array{ name: string, label?: string, width?: string }|
+ *     array{ taxonomy: string, label?: string, width?: string }|
+ *     array{ meta: string, type?: string, filter?: string, sortable?: bool, label?: string, width?: string }|
+ *     'cb'|'title'|'author'|'date'|'order'|'comments'
+ * )[] $columns Columns.
  */
-function set_list_table_column( string $post_type, array $columns ): void {
+function set_list_table_column( string $post_type, array $columns ): void {  // phpcs:ignore
 	global $pagenow;
 	if ( ! is_admin() || 'edit.php' !== $pagenow ) {
 		return;
@@ -232,7 +248,7 @@ function set_list_table_column( string $post_type, array $columns ): void {
 			if ( isset( $c['meta'] ) ) {
 				$name = "meta-{$c['meta']}";
 				if ( is_callable( $c['filter'] ?? '' ) ) {
-					$val_fns[ $name ] = $c['filter'];
+					$val_fns[ $name ] = isset( $c['filter'] ) ? $c['filter'] : '';  // @phpstan-ignore-line
 				} else {
 					$val_fns[ $name ] = '\esc_html';
 				}
@@ -261,7 +277,7 @@ function set_list_table_column( string $post_type, array $columns ): void {
 					$styles[] = ".column-$name {width: {$c['width']} !important;}";
 				}
 			}
-		} else {
+		} else {  // phpcs:ignore
 			if ( taxonomy_exists( $c ) ) {
 				$tx = get_taxonomy( $c );
 				if ( $tx ) {
@@ -290,7 +306,7 @@ function set_list_table_column( string $post_type, array $columns ): void {
 	);
 	add_action(
 		"manage_{$post_type}_posts_custom_column",
-		function ( $name, $post_id ) use ( $val_fns ) {
+		function ( string $name, int $post_id ) use ( $val_fns ) {
 			if ( isset( $val_fns[ $name ] ) ) {
 				$val = get_post_meta( $post_id, substr( $name, 5 /* 'meta-' */ ), true );
 				$fn  = $val_fns[ $name ];
@@ -303,7 +319,7 @@ function set_list_table_column( string $post_type, array $columns ): void {
 	if ( ! empty( $sortable ) ) {
 		add_filter(
 			"manage_edit-{$post_type}_sortable_columns",
-			function ( $cols ) use ( $sortable ) {
+			function ( array $cols ) use ( $sortable ) {
 				return array_merge( $cols, $sortable );
 			}
 		);

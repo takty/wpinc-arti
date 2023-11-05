@@ -4,8 +4,10 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-08-31
+ * @version 2023-11-02
  */
+
+declare(strict_types=1);
 
 namespace wpinc\post;
 
@@ -54,11 +56,11 @@ function get_corresponding_page_id(): int {
 /**
  * Computes the difference of arrays of posts.
  *
- * @param \WP_Post[] $array     The array to compare from.
+ * @param \WP_Post[] $arr       The array to compare from.
  * @param \WP_Post[] ...$arrays Arrays to compare against.
  * @return \WP_Post[] Posts.
  */
-function post_array_diff( array $array, array ...$arrays ): array {
+function post_array_diff( array $arr, array ...$arrays ): array {
 	$ids = array();
 	foreach ( $arrays as $ps ) {
 		foreach ( $ps as $p ) {
@@ -66,7 +68,7 @@ function post_array_diff( array $array, array ...$arrays ): array {
 		}
 	}
 	$ret = array();
-	foreach ( $array as $p ) {
+	foreach ( $arr as $p ) {
 		if ( ! in_array( $p->ID, $ids, true ) ) {
 			$ret[] = $p;
 		}
@@ -89,6 +91,9 @@ function sort_post_array( array $args, array ...$arrays ): array {
 	$args += array(
 		'order' => 'desc',
 	);
+	if ( ! is_string( $args['order'] ) ) {
+		$args['order'] = 'desc';
+	}
 
 	$date_ps = array();
 	foreach ( $arrays as $ps ) {
@@ -107,5 +112,5 @@ function sort_post_array( array $args, array ...$arrays ): array {
 		krsort( $date_ps );
 	}
 	$pss = array_values( $date_ps );
-	return array_merge( array(), ...array_map( 'array_values', $pss ) );
+	return array_merge( array(), ...array_map( 'array_values', $pss ) );  // @phpstan-ignore-line
 }

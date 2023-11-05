@@ -4,8 +4,10 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-08-31
+ * @version 2023-11-02
  */
+
+declare(strict_types=1);
 
 namespace wpinc\post;
 
@@ -54,6 +56,11 @@ function expand_entries_with_titles( array $id_to_title, string $slug, ?string $
  * @return \WP_Post[] Pages.
  */
 function _get_pages_by_ids( array $ids ): array {
+	/**
+	 * Posts. This is determined by $args['fields'] being ''.
+	 *
+	 * @var \WP_Post[] $ps
+	 */
 	$ps = get_posts(
 		array(
 			'posts_per_page' => -1,

@@ -4,8 +4,10 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-09-01
+ * @version 2023-11-02
  */
+
+declare(strict_types=1);
 
 namespace wpinc\post;
 
@@ -58,6 +60,9 @@ function separate_text( string $str, array $args = array() ) {
 		'filter' => 'esc_html',
 		'small'  => true,
 	);
+	if ( ! is_callable( $args['filter'] ) ) {
+		$args['filter'] = 'esc_html';
+	}
 
 	$new_ls = null;
 	$lines  = preg_split( '/　　|<\s*br\s*\/?>/ui', $str );
