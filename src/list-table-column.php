@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-11-04
+ * @version 2023-11-14
  */
 
 declare(strict_types=1);
@@ -215,7 +215,7 @@ function _get_current_post_type(): ?string {
  */
 function set_list_table_column( string $post_type, array $columns ): void {  // phpcs:ignore
 	global $pagenow;
-	if ( ! is_admin() || 'edit.php' !== $pagenow ) {
+	if ( ! is_admin() || ( 'edit.php' !== $pagenow && ! wp_doing_ajax() ) ) {
 		return;
 	}
 
