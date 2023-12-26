@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-11-04
+ * @version 2023-12-26
  */
 
 declare(strict_types=1);
@@ -21,15 +21,19 @@ require_once __DIR__ . '/post-type-event.php';
  *
  * @param \WP_Post[]   $ps   Array of post objects.
  * @param string       $slug The slug name for the generic template.
- * @param string|null  $name The name of the specialized template. Default null.
+ * @param string|null  $name The name of the specialized template. '%post_type%' is replaced by the post type. Default null.
  * @param array<mixed> $args Additional arguments passed to the template. Default array().
  */
-function the_loop( array $ps, string $slug, string $name = null, array $args = array() ): void {
+function the_loop( array $ps, string $slug, ?string $name = null, array $args = array() ): void {
 	global $post;
 	$orig_post = $post;
 	foreach ( $ps as $post ) {  // phpcs:ignore
 		setup_postdata( $post );
-		get_template_part( $slug, $name, $args );
+		$temp = $name;
+		if ( is_string( $temp ) ) {
+			$temp = str_replace( '%post_type%', $post->post_type, $temp );
+		}
+		get_template_part( $slug, $temp, $args );
 	}
 	if ( $orig_post ) {
 		$post = $orig_post;  // phpcs:ignore
