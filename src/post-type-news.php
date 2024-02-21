@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-11-02
+ * @version 2024-02-21
  */
 
 declare(strict_types=1);
@@ -14,20 +14,37 @@ namespace wpinc\post\news;
 require_once __DIR__ . '/post-type.php';
 require_once __DIR__ . '/list-table-column.php';
 
-/**
+/** phpcs:ignore
  * Registers news-like post type.
  *
  * @psalm-suppress ArgumentTypeCoercion
- *
- * @param string                $post_type Post type.
- * @param string                $slug      Parma struct base.
- * @param array<string, string> $labels    Labels.
- * @param array<string, mixed>  $args      Arguments for register_post_type().
+ * phpcs:ignore
+ * @param string|array{
+ *     post_type?   : string,
+ *     slug?        : string,
+ *     by_post_name?: bool,
+ *     labels?      : array{ name: string },
+ * } $args Arguments.
+ * @param string                $slug   (Deprecated) Parma struct base.
+ * @param array<string, string> $labels (Deprecated) Labels.
+ * @param array<string, mixed>  $a      (Deprecated) Arguments for register_post_type().
  */
-function register_post_type( string $post_type = 'news', string $slug = '', array $labels = array(), array $args = array() ): void {
-	if ( empty( $slug ) ) {
-		$slug = $post_type;
+function register_post_type( $args = array(), string $slug = '', array $labels = array(), array $a = array() ): void {
+	if ( is_string( $args ) ) {
+		$args = $a + array(
+			'post_type' => $args,
+			'slug'      => $slug,
+			'labels'    => $labels,
+		);
 	}
+
+	$def_opts = array(  // Keys removed when $args is passed to register_post_type.
+		'post_type'    => 'news',
+		'slug'         => '',
+		'by_post_name' => false,
+	);
+
+	$args += $def_opts;
 	$args += array(
 		'public'        => true,
 		'show_in_rest'  => true,
@@ -36,10 +53,18 @@ function register_post_type( string $post_type = 'news', string $slug = '', arra
 		'menu_position' => 5,
 		'menu_icon'     => 'dashicons-admin-post',
 		'supports'      => array( 'title', 'editor', 'revisions', 'thumbnail', 'custom-fields' ),
-		'labels'        => $labels + array( 'name' => _x( 'News', 'post type news', 'wpinc_post' ) ),
+		'labels'        => array(),
 	);
-	\register_post_type( $post_type, $args );  // @phpstan-ignore-line
-	\wpinc\post\add_rewrite_rules( $post_type, $slug, 'date', false );
+
+	$args['labels'] += array(
+		'name' => _x( 'News', 'post type news', 'wpinc_post' ),
+	);
+
+	if ( empty( $args['slug'] ) ) {
+		$args['slug'] = $args['post_type'];
+	}
+	\register_post_type( $args['post_type'], array_diff_key( $args, $def_opts ) );  // @phpstan-ignore-line
+	\wpinc\post\add_rewrite_rules( $args['post_type'], $args['slug'], 'date', $args['by_post_name'] );  // @phpstan-ignore-line
 }
 
 /**

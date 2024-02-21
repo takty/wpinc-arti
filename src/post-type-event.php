@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-11-04
+ * @version 2024-02-21
  */
 
 declare(strict_types=1);
@@ -28,16 +28,20 @@ const PMK_DATE_TO   = '_date_to';
  * @psalm-suppress ArgumentTypeCoercion
  * phpcs:ignore
  * @param array{
- *     post_type?  : string,
- *     slug?       : string,
- *     do_autofill?: bool,
- *     labels?     : array{ date: string, date_from: string, date_to: string }
+ *     post_type?        : string,
+ *     slug?             : string,
+ *     by_post_name?     : bool,
+ *     do_autofill?      : bool,
+ *     order_by?         : 'from'|'to',
+ *     replace_date_with?: 'from'|'to',
+ *     labels?           : array{ name: string, date: string, date_from: string, date_to: string },
  * } $args Arguments.
  */
 function register_post_type( array $args = array() ): void {
-	$def_opts = array(
+	$def_opts = array(  // Keys removed when $args is passed to register_post_type.
 		'post_type'         => 'event',
 		'slug'              => '',
+		'by_post_name'      => false,
 		'do_autofill'       => false,
 		'order_by'          => 'from',
 		'replace_date_with' => 'from',
@@ -66,7 +70,7 @@ function register_post_type( array $args = array() ): void {
 		$args['slug'] = $args['post_type'];
 	}
 	\register_post_type( $args['post_type'], array_diff_key( $args, $def_opts ) );  // @phpstan-ignore-line
-	\wpinc\post\add_rewrite_rules( $args['post_type'], $args['slug'], 'date', false );
+	\wpinc\post\add_rewrite_rules( $args['post_type'], $args['slug'], 'date', $args['by_post_name'] );
 
 	_set_custom_date_order( $args['post_type'], $args['order_by'] );
 	_replace_date( $args['post_type'], $args['replace_date_with'] );
