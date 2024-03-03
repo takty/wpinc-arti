@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2024-02-21
+ * @version 2024-03-03
  */
 
 declare(strict_types=1);
@@ -34,7 +34,7 @@ const PMK_DATE_TO   = '_date_to';
  *     do_autofill?      : bool,
  *     order_by?         : 'from'|'to',
  *     replace_date_with?: 'from'|'to',
- *     labels?           : array{ name: string, date: string, date_from: string, date_to: string },
+ *     labels?           : array{  name?: string, date?: string, date_from?: string, date_to?: string  },
  * } $args Arguments.
  */
 function register_post_type( array $args = array() ): void {
