@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-09-01
+ * @version 2024-03-13
  */
 
 namespace wpinc\post\ja;
@@ -37,20 +37,20 @@ function get_segment( string $text ): array {
 			if ( 'O' === $t_prev ) {
 				$word .= $c;
 			} else {
-				if ( ! empty( $word ) ) {
+				if ( '' !== $word ) {
 					$parts[] = array( $word, true );
 				}
 				$word = $c;
 			}
 		} else {
-			if ( ! empty( $word ) ) {
+			if ( '' !== $word ) {
 				$parts[] = array( $word, ( 'O' !== $t_prev ) );
 			}
 			$word = $c;
 		}
 		$t_prev = $t;
 	}
-	if ( ! empty( $word ) ) {
+	if ( '' !== $word ) {
 		$parts[] = array( $word, ( 'O' !== $t_prev ) );
 	}
 	return $parts;

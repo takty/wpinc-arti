@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-11-02
+ * @version 2024-03-13
  */
 
 declare(strict_types=1);
@@ -46,7 +46,7 @@ function enable_custom_excerpt( int $length = 220, string $more = '...' ): void 
 			$orig = wp_kses( $original_text, $allowed_html );
 			$orig = mb_trim( remove_continuous_spaces( $orig ) );
 			$text = mb_trim( mb_strimwidth( $orig, 0, $num_words ) );
-			if ( ! empty( $text ) && $orig !== $text ) {
+			if ( '' !== $text && $orig !== $text ) {
 				$text = $text . $more;
 			}
 			return $text;
@@ -81,7 +81,7 @@ function has_title( ?string $str = null, $args = array() ): bool {
 	if ( null === $str ) {
 		$str = get_the_title( $args );
 	}
-	return ! empty( trim( $str ) );
+	return '' !== trim( $str );
 }
 
 /** phpcs:ignore
@@ -112,7 +112,7 @@ function has_content( ?string $str = null, $args = array() ): bool {
 
 	$str = strip_tags( $str, $allowed_tags );
 	$str = str_replace( '&nbsp;', '', $str );
-	return ! empty( trim( $str ) );
+	return '' !== trim( $str );
 }
 
 
@@ -149,10 +149,12 @@ function has_content( ?string $str = null, $args = array() ): bool {
  * }
  */
 function the_title( string $before = '', string $after = '', array $args = array() ): void {
+	/** @psalm-suppress InvalidArgument */  // phpcs:ignore
 	$str = get_the_title( $args );
-	if ( empty( $str ) ) {
+	if ( '' === $str ) {
 		return;
 	}
+	/** @psalm-suppress InvalidArgument */  // phpcs:ignore
 	echo process_title( $str, $before, $after, $args );  // phpcs:ignore
 }
 

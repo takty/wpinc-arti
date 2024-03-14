@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2024-03-03
+ * @version 2024-03-14
  */
 
 declare(strict_types=1);
@@ -66,9 +66,10 @@ function register_post_type( array $args = array() ): void {
 		'date_to'   => _x( 'To', 'post type event', 'wpinc_post' ),
 	);
 
-	if ( empty( $args['slug'] ) ) {
+	if ( '' === $args['slug'] ) {
 		$args['slug'] = $args['post_type'];
 	}
+	/** @psalm-suppress InvalidArgument */  // phpcs:ignore
 	\register_post_type( $args['post_type'], array_diff_key( $args, $def_opts ) );  // @phpstan-ignore-line
 	\wpinc\post\add_rewrite_rules( $args['post_type'], $args['slug'], 'date', $args['by_post_name'] );
 
@@ -89,6 +90,7 @@ function register_post_type( array $args = array() ): void {
 			)
 		);
 	}
+	/** @psalm-suppress InvalidArgument */  // phpcs:ignore
 	_initialize_hooks( $args );
 }
 
@@ -135,8 +137,11 @@ function _initialize_hooks( array $args ): void {
 						add_action(
 							'enqueue_block_editor_assets',
 							function () use ( $args ) {
+								/** @psalm-suppress InvalidArgument */  // phpcs:ignore
 								_cb_enqueue_block_editor_assets( $args );
-							}
+							},
+							10,
+							0
 						);
 					} else {
 						_set_duration_picker( $args );
@@ -148,6 +153,7 @@ function _initialize_hooks( array $args ): void {
 	add_action(
 		'rest_after_insert_' . $args['post_type'],
 		function ( \WP_Post $post ) use ( $args ) {
+			/** @psalm-suppress InvalidArgument */  // phpcs:ignore
 			_cb_rest_after_insert( $args, $post );
 		}
 	);
@@ -198,7 +204,7 @@ function _replace_date( string $post_type, string $type ): void {
 				if ( $post->post_type !== $post_type ) {
 					return $the_date;
 				}
-				if ( empty( $df ) ) {
+				if ( '' === $df ) {
 					$df = get_option( 'date_format' );
 					if ( ! is_string( $df ) ) {
 						$df = '';
@@ -207,7 +213,7 @@ function _replace_date( string $post_type, string $type ): void {
 				$date = get_post_meta( $post->ID, $key, true );
 				if ( is_string( $date ) ) {
 					$date = mysql2date( $df, $date );
-					if ( $date ) {
+					if ( is_string( $date ) ) {
 						return $date;
 					}
 				}
@@ -411,7 +417,9 @@ function set_admin_column( string $post_type, bool $add_cat, bool $add_tag ): vo
 			$cs   = add_duration_column( $post_type, $cs );
 			$cs[] = 'date';
 			\wpinc\post\set_list_table_column( $post_type, $cs );  // @phpstan-ignore-line
-		}
+		},
+		10,
+		0
 	);
 }
 
@@ -450,7 +458,7 @@ function add_duration_column( string $post_type, array $cs = array() ): array {
  * @param string $val Value.
  */
 function _filter_date_val( string $val ): string {
-	if ( empty( $val ) ) {
+	if ( '' === $val ) {
 		return '';
 	}
 	$t = strtotime( $val );
@@ -479,7 +487,7 @@ function format_duration( int $post_id, array $formats, string $date_format, boo
 	$dd = _get_duration_dates( $post_id );
 	$df = implode( "\t", str_split( $date_format, 1 ) );
 
-	if ( $dd['from_ns'] && $dd['to_ns'] ) {
+	if ( is_array( $dd['from_ns'] ) && is_array( $dd['to_ns'] ) ) {
 		$from_fd = _split_date_string( $dd['from_raw'], $df, $do_translate );
 		$to_fd   = _split_date_string( $dd['to_raw'], $df, $do_translate );
 
@@ -492,7 +500,7 @@ function format_duration( int $post_id, array $formats, string $date_format, boo
 			$type = 'd';
 		}
 		return sprintf( $formats[ $type ], ...$from_fd, ...$to_fd );
-	} elseif ( $dd['from_ns'] || $dd['to_ns'] ) {
+	} elseif ( is_array( $dd['from_ns'] ) || is_array( $dd['to_ns'] ) ) {
 		$fd = _split_date_string( $dd['from_raw'] ? $dd['from_raw'] : $dd['to_raw'], $df, $do_translate );
 
 		return sprintf( $formats['one'], ...$fd );
@@ -529,8 +537,8 @@ function _get_duration_dates( int $post_id ): array {
 	$from_raw = is_string( $from_raw ) ? $from_raw : '';
 	$to_raw   = get_post_meta( $post_id, PMK_DATE_TO, true );
 	$to_raw   = is_string( $to_raw ) ? $to_raw : '';
-	$from_ns  = empty( $from_raw ) ? null : explode( '-', $from_raw );
-	$to_ns    = empty( $to_raw ) ? null : explode( '-', $to_raw );
+	$from_ns  = ( '' === $from_raw ) ? null : explode( '-', $from_raw );
+	$to_ns    = ( '' === $to_raw ) ? null : explode( '-', $to_raw );
 	return compact( 'from_raw', 'to_raw', 'from_ns', 'to_ns' );
 }
 
@@ -543,8 +551,8 @@ function _get_duration_dates( int $post_id ): array {
 function _get_duration_state( int $post_id ): string {
 	$from_raw = get_post_meta( $post_id, PMK_DATE_FROM, true );
 	$to_raw   = get_post_meta( $post_id, PMK_DATE_TO, true );
-	$from_ns  = ( ! is_string( $from_raw ) || empty( $from_raw ) ) ? null : explode( '-', $from_raw );
-	$to_ns    = ( ! is_string( $to_raw ) || empty( $to_raw ) ) ? null : explode( '-', $to_raw );
+	$from_ns  = ( ! is_string( $from_raw ) || '' === $from_raw ) ? null : explode( '-', $from_raw );  // Check for non-empty-string.
+	$to_ns    = ( ! is_string( $to_raw ) || '' === $to_raw ) ? null : explode( '-', $to_raw );  // Check for non-empty-string.
 	$state    = '';
 
 	if ( $from_ns ) {

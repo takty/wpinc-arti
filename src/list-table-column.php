@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-11-14
+ * @version 2024-03-14
  */
 
 declare(strict_types=1);
@@ -57,7 +57,9 @@ function enable_page_slug_column( ?int $pos = null ): void {
 		'admin_print_styles-edit.php',
 		function () {
 			echo '<style>.fixed .column-slug{width:20%;}</style>';
-		}
+		},
+		10,
+		0
 	);
 }
 
@@ -74,7 +76,7 @@ function enable_menu_order_column( ?int $pos = null ): void {
 		return;
 	}
 	$pt = _get_current_post_type();
-	if ( ! $pt || ! post_type_supports( $pt, 'page-attributes' ) ) {
+	if ( ! is_string( $pt ) || ! post_type_supports( $pt, 'page-attributes' ) ) {
 		return;
 	}
 	add_filter(
@@ -120,7 +122,9 @@ function enable_menu_order_column( ?int $pos = null ): void {
 				@media screen and (max-width:1100px) {.fixed .column-order{width:12%;}}
 			</style>
 			<?php
-		}
+		},
+		10,
+		0
 	);
 }
 
@@ -259,7 +263,7 @@ function set_list_table_column( string $post_type, array $columns ): void {  // 
 			} elseif ( isset( $c['taxonomy'] ) ) {
 				if ( taxonomy_exists( $c['taxonomy'] ) ) {
 					$name = "taxonomy-{$c['taxonomy']}";
-					if ( empty( $label ) ) {
+					if ( '' === $label ) {
 						$tx = get_taxonomy( $c['taxonomy'] );
 						if ( $tx ) {
 							$label = $tx->labels->name;
@@ -271,7 +275,7 @@ function set_list_table_column( string $post_type, array $columns ): void {  // 
 					$name = $c['name'];
 				}
 			}
-			if ( ! empty( $name ) ) {
+			if ( '' !== $name ) {
 				$cols[ $name ] = $label;
 				if ( isset( $c['width'] ) ) {  // Column Styles.
 					$styles[] = ".column-$name {width: {$c['width']} !important;}";
@@ -288,6 +292,7 @@ function set_list_table_column( string $post_type, array $columns ): void {  // 
 			}
 		}
 	}
+	/** @psalm-suppress HookNotFound */  // phpcs:ignore
 	add_filter(
 		"manage_edit-{$post_type}_columns",
 		function () use ( $cols ) {
@@ -302,7 +307,9 @@ function set_list_table_column( string $post_type, array $columns ): void {  // 
 				<style><?php echo implode( "\n", $styles );  // phpcs:ignore ?></style>
 				<?php
 			}
-		}
+		},
+		10,
+		0
 	);
 	add_action(
 		"manage_{$post_type}_posts_custom_column",
@@ -317,6 +324,7 @@ function set_list_table_column( string $post_type, array $columns ): void {  // 
 		2
 	);
 	if ( ! empty( $sortable ) ) {
+		/** @psalm-suppress HookNotFound */  // phpcs:ignore
 		add_filter(
 			"manage_edit-{$post_type}_sortable_columns",
 			function ( array $cols ) use ( $sortable ) {
@@ -335,7 +343,7 @@ function set_list_table_column( string $post_type, array $columns ): void {  // 
 						'meta_key' => $key,  // phpcs:ignore
 						'orderby'  => 'meta_value',
 					);
-					if ( ! empty( $types[ $key ] ) ) {
+					if ( '' !== $types[ $key ] ) {
 						$orderby['meta_type'] = $types[ $key ];
 					}
 					$vars = array_merge( $vars, $orderby );

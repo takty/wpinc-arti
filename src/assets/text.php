@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-11-02
+ * @version 2024-03-14
  */
 
 declare(strict_types=1);
@@ -75,7 +75,7 @@ function separate_text( string $str, array $args = array() ) {
 					foreach ( $lines as $l ) {
 						$ms = array();
 						$ss = preg_split( '/(<small>[\s\S]*?<\/small>)/iu', $l, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
-						if ( $ss ) {
+						if ( is_array( $ss ) ) {
 							foreach ( $ss as $s ) {
 								preg_match( '/<small>([\s\S]*?)<\/small>/iu', $s, $matches );
 								if ( empty( $matches ) ) {
@@ -122,15 +122,17 @@ function separate_text( string $str, array $args = array() ) {
 /**
  * Segments and wrap string.
  *
+ * @psalm-suppress InvalidParamDefault
+ *
  * @param string        $l      String.
  * @param callable|null $filter Filter function.
  * @return string Segmented string.
  */
-function _segment_and_wrap( string $l, $filter = 'esc_html' ): string {
+function _segment_and_wrap( string $l, ?callable $filter ): string {
 	$ps = ja\get_segment( $l );
 	$ws = array();
 	foreach ( $ps as $p ) {
-		$w    = $filter ? call_user_func( $filter, $p[0] ) : $p[0];
+		$w    = is_callable( $filter ) ? call_user_func( $filter, $p[0] ) : $p[0];
 		$ws[] = $p[1] ? "<span>$w</span>" : $w;
 	}
 	return implode( '', $ws );

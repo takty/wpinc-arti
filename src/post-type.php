@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-11-04
+ * @version 2024-03-13
  */
 
 declare(strict_types=1);
@@ -49,7 +49,7 @@ function add_post_type_rewrite_rules( string $post_type, string $slug = '', bool
 	}
 	add_rewrite_tag( "%$post_type%", $regex, $query );
 
-	$slug = ( empty( $slug ) ? $post_type : $slug );
+	$slug = ( '' === $slug ) ? $post_type : $slug;
 	add_permastruct( $post_type, "/$slug/%{$post_type}%", array( 'with_front' => false ) );
 
 	if ( post_type_supports( $post_type, 'comments' ) ) {
@@ -82,6 +82,11 @@ function add_post_type_link_filter( string $post_type, bool $by_post_name = fals
 			} else {
 				$link = str_replace( "%$post_type%", (string) $post->ID, $ps );
 			}
+			/**
+			 * Link URL.
+			 *
+			 * @var string $link
+			 */
 			return home_url( user_trailingslashit( $link ) );
 		},
 		1,
@@ -104,7 +109,7 @@ function add_post_type_link_filter( string $post_type, bool $by_post_name = fals
  */
 function add_archive_rewrite_rules( string $post_type, string $slug = '' ): void {
 	global $wp_rewrite;
-	$slug = $wp_rewrite->root . ( empty( $slug ) ? $post_type : $slug );
+	$slug = $wp_rewrite->root . ( ( '' === $slug ) ? $post_type : $slug );
 
 	add_rewrite_rule( "$slug/?$", "index.php?post_type=$post_type", 'top' );
 	add_rewrite_rule( "$slug/{$wp_rewrite->pagination_base}/([0-9]{1,})/?$", "index.php?post_type=$post_type" . '&paged=$matches[1]', 'top' );
@@ -126,7 +131,7 @@ function add_archive_rewrite_rules( string $post_type, string $slug = '' ): void
  */
 function add_archive_link_filter( string $post_type, string $slug = '' ): void {
 	global $wp_rewrite;
-	$slug = $wp_rewrite->root . ( empty( $slug ) ? $post_type : $slug );
+	$slug = $wp_rewrite->root . ( ( '' === $slug ) ? $post_type : $slug );
 	$link = home_url( user_trailingslashit( $slug, 'post_type_archive' ) );
 
 	add_filter(
@@ -151,7 +156,7 @@ function add_archive_link_filter( string $post_type, string $slug = '' ): void {
  * @param string $date_slug Date slug.
  */
 function add_date_archive_rewrite_rules( string $post_type, string $slug = '', string $date_slug = 'date' ): void {
-	$slug = ( empty( $slug ) ? $post_type : $slug );
+	$slug = ( '' === $slug ) ? $post_type : $slug;
 	$tag  = "%{$post_type}_{$date_slug}%";
 	$name = "{$post_type}_{$date_slug}";
 
@@ -170,7 +175,7 @@ function add_date_archive_rewrite_rules( string $post_type, string $slug = '', s
  */
 function add_date_archive_link_filter( string $post_type, string $slug = '', string $date_slug = 'date' ): void {
 	global $wp_rewrite;
-	$slug = $wp_rewrite->root . ( empty( $slug ) ? $post_type : $slug );
+	$slug = $wp_rewrite->root . ( ( '' === $slug ) ? $post_type : $slug );
 
 	add_filter(
 		'get_archives_link',
@@ -202,7 +207,7 @@ function add_date_archive_link_filter( string $post_type, string $slug = '', str
  */
 function get_query_arg( string $key, string $url ): string {
 	$query = wp_parse_url( $url, PHP_URL_QUERY );
-	if ( $query ) {
+	if ( is_string( $query ) ) {
 		$qps = explode( '&', $query );
 		foreach ( $qps as $qp ) {
 			$key_val = explode( '=', $qp );

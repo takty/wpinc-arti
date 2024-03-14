@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2024-02-21
+ * @version 2024-03-14
  */
 
 declare(strict_types=1);
@@ -60,7 +60,7 @@ function register_post_type( $args = array(), string $slug = '', array $labels =
 		'name' => _x( 'News', 'post type news', 'wpinc_post' ),
 	);
 
-	if ( empty( $args['slug'] ) ) {
+	if ( ! is_string( $args['slug'] ) || '' === $args['slug'] ) {  // Check for non-empty-string.
 		$args['slug'] = $args['post_type'];
 	}
 	\register_post_type( $args['post_type'], array_diff_key( $args, $def_opts ) );  // @phpstan-ignore-line
@@ -93,6 +93,8 @@ function set_admin_column( string $post_type, bool $add_cat, bool $add_tag ): vo
 			}
 			$cs[] = 'date';
 			\wpinc\post\set_list_table_column( $post_type, $cs );
-		}
+		},
+		10,
+		0
 	);
 }

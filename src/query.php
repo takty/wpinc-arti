@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-12-26
+ * @version 2024-03-14
  */
 
 declare(strict_types=1);
@@ -59,7 +59,7 @@ function the_loop_with_page_template( array $ps, string $slug, ?string $name = n
 	foreach ( $ps as $post ) {  // phpcs:ignore
 		setup_postdata( $post );
 		$t = get_page_template_slug();
-		$n = ( empty( $t ) || 'default' === $t ) ? $name : basename( $t, '.php' );
+		$n = ( ! is_string( $t ) || '' === $t ) ? $name : basename( $t, '.php' );  // Check for non-empty-string.
 		get_template_part( $slug, $n, $args );
 	}
 	if ( $orig_post ) {
@@ -217,7 +217,7 @@ function add_page_query( array $args = array() ): array {
  */
 function add_child_page_query( ?int $parent_id = null, array $args = array() ): array {
 	$args = add_page_query( $args );
-	return $args + array( 'post_parent' => $parent_id ?? get_the_ID() );
+	return $args + array( 'post_parent' => $parent_id ?? (int) get_the_ID() );
 }
 
 /**

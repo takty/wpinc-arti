@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2023-11-04
+ * @version 2024-03-14
  */
 
 declare(strict_types=1);
@@ -28,19 +28,19 @@ function make_custom_date_sortable( string $post_type, string $slug, string $met
 				return;
 			}
 			if ( isset( $query->query_vars['post_type'] ) && $query->query_vars['post_type'] === $post_type ) {
-				if ( $query->get( $slug, false ) !== false ) {
+				if ( '' !== $query->get( $slug ) ) {
 					$year = $query->get( 'year' );
-					if ( ! empty( $year ) ) {
+					if ( '' !== $year ) {
 						$query->set( $slug . '_year', $year );
 						$query->set( 'year', null );
 					}
 					$monthnum = $query->get( 'monthnum' );
-					if ( ! empty( $monthnum ) ) {
+					if ( '' !== $monthnum ) {
 						$query->set( $slug . '_monthnum', $monthnum );
 						$query->set( 'monthnum', null );
 					}
 					$day = $query->get( 'day' );
-					if ( ! empty( $day ) ) {
+					if ( '' !== $day ) {
 						$query->set( $slug . '_day', $day );
 						$query->set( 'day', null );
 					}
@@ -57,7 +57,7 @@ function make_custom_date_sortable( string $post_type, string $slug, string $met
 				);
 				$query->set( 'meta_query', $mq );
 
-				$order = $query->get( 'order' );
+				$order = $query->get( 'order', 'DESC' );
 				$query->set(
 					'orderby',
 					array(
@@ -75,17 +75,17 @@ function make_custom_date_sortable( string $post_type, string $slug, string $met
 			if ( is_admin() || ! $query->is_main_query() ) {
 				return $where;
 			}
-			if ( $post_type === $query->get( 'post_type' ) && $query->get( $slug, false ) !== false ) {
-				$year = $query->get( $slug . '_year', false );
-				if ( false !== $year ) {
+			if ( $post_type === $query->get( 'post_type' ) && '' !== $query->get( $slug ) ) {
+				$year = $query->get( $slug . '_year' );
+				if ( '' !== $year ) {
 					$where .= $wpdb->prepare( " AND ( YEAR( CAST( $wpdb->postmeta.meta_value AS DATE ) ) = %d )", $year );
 				}
-				$monthnum = $query->get( $slug . '_monthnum', false );
-				if ( false !== $monthnum ) {
+				$monthnum = $query->get( $slug . '_monthnum' );
+				if ( '' !== $monthnum ) {
 					$where .= $wpdb->prepare( " AND ( MONTH( CAST( $wpdb->postmeta.meta_value AS DATE ) ) = %d )", $monthnum );
 				}
-				$day = $query->get( $slug . '_day', false );
-				if ( false !== $day ) {
+				$day = $query->get( $slug . '_day' );
+				if ( '' !== $day ) {
 					$where .= $wpdb->prepare( " AND ( DAY( CAST( $wpdb->postmeta.meta_value AS DATE ) ) = %d )", $day );
 				}
 			}
