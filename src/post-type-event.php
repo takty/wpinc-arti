@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2024-03-14
+ * @version 2024-08-23
  */
 
 declare(strict_types=1);
@@ -34,7 +34,7 @@ const PMK_DATE_TO   = '_date_to';
  *     do_autofill?      : bool,
  *     order_by?         : 'from'|'to',
  *     replace_date_with?: 'from'|'to',
- *     labels?           : array{  name?: string, date?: string, date_from?: string, date_to?: string  },
+ *     labels?           : array{  name?: string, date?: string, date_from?: string, date_to?: string, reset?: string },
  * } $args Arguments.
  */
 function register_post_type( array $args = array() ): void {
@@ -64,6 +64,7 @@ function register_post_type( array $args = array() ): void {
 		'date'      => _x( 'Duration', 'post type event', 'wpinc_post' ),
 		'date_from' => _x( 'From', 'post type event', 'wpinc_post' ),
 		'date_to'   => _x( 'To', 'post type event', 'wpinc_post' ),
+		'reset'     => _x( 'Reset', 'post type event', 'wpinc_post' ),
 	);
 
 	if ( '' === $args['slug'] ) {
@@ -295,6 +296,7 @@ function _cb_enqueue_block_editor_assets( array $args ): void {
 				'panel'        => $args['labels']['date'],
 				'date_from'    => $args['labels']['date_from'],
 				'date_to'      => $args['labels']['date_to'],
+				'reset'        => $args['labels']['reset'],
 				'default_from' => '0000-00-00',
 				'default_to'   => '0000-00-00',
 			),
@@ -348,6 +350,7 @@ function _cb_rest_after_insert( array $args, \WP_Post $post ): void {
  *         date     : string,
  *         date_from: string,
  *         date_to  : string,
+ *         reset    : string,
  *     },
  *     url_to?    : string,
  *     locale?    : string
@@ -362,6 +365,7 @@ function _set_duration_picker( array $args ): void {
 		'do_autofill' => $args['do_autofill'],
 		'label_from'  => $args['labels']['date_from'],
 		'label_to'    => $args['labels']['date_to'],
+		'reset'       => $args['labels']['reset'],
 	);
 	if ( isset( $args['url_to'] ) ) {
 		$dp_args['url_to'] = $args['url_to'];

@@ -1,7 +1,7 @@
 # Translation of Post - Development in Japanese
 # @package Wpinc Post
 # @author Takuto Yanagida
-# @version 2022-02-28
+# @version 2024-08-23
 
 # Post Type Event --------------------------------------------------------------
 
@@ -24,6 +24,10 @@ msgstr "開始"
 msgctxt "post type event"
 msgid "To"
 msgstr "終了"
+
+msgctxt "post type event"
+msgid "Reset"
+msgstr "リセット"
 
 # Post Type News ---------------------------------------------------------------
 

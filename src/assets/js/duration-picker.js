@@ -2,7 +2,7 @@
  * Duration Picker Plugin
  *
  * @author Takuto Yanagida
- * @version 2022-02-27
+ * @version 2024-08-23
  */
 
 ((wp) => {
@@ -12,7 +12,7 @@
 		coreData  : { useEntityProp },
 		plugins   : { registerPlugin },
 		element   : { useState, Fragment, createElement: el },
-		components: { DateTimePicker, Button, PanelRow, Dropdown },
+		components: { DatePicker, Button, PanelRow, Dropdown },
 		editPost  : { PluginDocumentSettingPanel },
 	} = wp;
 
@@ -30,7 +30,6 @@
 			{},
 			el('label', { htmlFor: id }, label),
 			el(Dropdown, {
-				position    : 'bottom left',
 				renderToggle: ({ onToggle, isOpen }) => el(
 					Fragment,
 					{},
@@ -50,7 +49,7 @@
 					]
 				),
 				renderContent: () => el(
-					DateTimePicker,
+					DatePicker,
 					{
 						currentDate,
 						onChange: (v) => { onChange(v ? v.split('T')[0] : null); },
@@ -98,7 +97,22 @@
 					}
 				)
 			),
-
+			el(
+				PanelRow,
+				{},
+				el(
+					Button,
+					{
+						type     : 'link',
+						className: 'is-destructive',
+						onClick  : () => {
+							setMeta({ [pmk_from]: null, [pmk_to]: null });
+						},
+						isLink   : true,
+					},
+					labels.reset ?? 'Reset',
+				)
+			),
 		);
 	};
 
