@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2024-08-23
+ * @version 2024-08-26
  */
 
 declare(strict_types=1);
@@ -26,6 +26,7 @@ const PMK_DATE_TO   = '_date_to';
  * Registers event-like post type.
  *
  * @psalm-suppress ArgumentTypeCoercion
+ *
  * phpcs:ignore
  * @param array{
  *     post_type?        : string,
@@ -34,6 +35,7 @@ const PMK_DATE_TO   = '_date_to';
  *     do_autofill?      : bool,
  *     order_by?         : 'from'|'to',
  *     replace_date_with?: 'from'|'to',
+ *     pass_through?     : bool,
  *     labels?           : array{  name?: string, date?: string, date_from?: string, date_to?: string, reset?: string },
  * } $args Arguments.
  */
@@ -45,6 +47,7 @@ function register_post_type( array $args = array() ): void {
 		'do_autofill'       => false,
 		'order_by'          => 'from',
 		'replace_date_with' => 'from',
+		'pass_through'      => false,
 	);
 
 	$args += $def_opts;
@@ -74,7 +77,7 @@ function register_post_type( array $args = array() ): void {
 	\register_post_type( $args['post_type'], array_diff_key( $args, $def_opts ) );  // @phpstan-ignore-line
 	\wpinc\post\add_rewrite_rules( $args['post_type'], $args['slug'], 'date', $args['by_post_name'] );
 
-	_set_custom_date_order( $args['post_type'], $args['order_by'] );
+	_set_custom_date_order( $args['post_type'], $args['order_by'], $args['pass_through'] );
 	_replace_date( $args['post_type'], $args['replace_date_with'] );
 
 	foreach ( array( PMK_DATE_FROM, PMK_DATE_TO ) as $key ) {
@@ -100,11 +103,12 @@ function register_post_type( array $args = array() ): void {
  *
  * @access private
  * @global string $pagenow
+ *
  * phpcs:ignore
  * @param array{
  *     post_type  : string,
  *     do_autofill: bool,
- *     labels     : array{ date: string, date_from: string, date_to: string }
+ *     labels     : array{ date: string, date_from: string, date_to: string, reset: string }
  * } $args Arguments.
  */
 function _initialize_hooks( array $args ): void {
@@ -165,10 +169,11 @@ function _initialize_hooks( array $args ): void {
  *
  * @access private
  *
- * @param string $post_type Post type.
- * @param string $type      Type.
+ * @param string $post_type    Post type.
+ * @param string $type         Type.
+ * @param bool   $pass_through Whether or not pass through posts without custom date.
  */
-function _set_custom_date_order( string $post_type, string $type ): void {
+function _set_custom_date_order( string $post_type, string $type, bool $pass_through = false ): void {
 	$key = '';
 	if ( 'from' === $type ) {
 		$key = PMK_DATE_FROM;
@@ -177,8 +182,8 @@ function _set_custom_date_order( string $post_type, string $type ): void {
 		$key = PMK_DATE_TO;
 	}
 	if ( $key ) {
-		\wpinc\post\make_custom_date_sortable( $post_type, 'date', $key );
-		\wpinc\post\enable_custom_date_adjacent_post_link( $post_type, $key );
+		\wpinc\post\make_custom_date_sortable( $post_type, 'date', $key, $pass_through );
+		\wpinc\post\enable_custom_date_adjacent_post_link( $post_type, $key, $pass_through );
 	}
 }
 
@@ -268,6 +273,7 @@ function _cb_post_class( array $classes, array $_class, int $post_id, string $po
  * Callback function for 'enqueue_block_editor_assets' action.
  *
  * @access private
+ *
  * phpcs:ignore
  * @param array{
  *     post_type: string,
@@ -275,6 +281,7 @@ function _cb_post_class( array $classes, array $_class, int $post_id, string $po
  *         date     : string,
  *         date_from: string,
  *         date_to  : string,
+ *         reset    : string,
  *     }
  * } $args Arguments.
  */
@@ -310,6 +317,7 @@ function _cb_enqueue_block_editor_assets( array $args ): void {
  *
  * @access private
  * @psalm-suppress InvalidDocblock
+ *
  * phpcs:ignore
  * @param array{ do_autofill: bool } $args Arguments.
  * @param \WP_Post                   $post Inserted or updated post object.
@@ -342,6 +350,7 @@ function _cb_rest_after_insert( array $args, \WP_Post $post ): void {
  * Sets duration picker.
  *
  * @psalm-suppress UndefinedFunction, InvalidDocblock
+ *
  * phpcs:ignore
  * @param array{
  *     post_type  : string,
