@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2024-08-26
+ * @version 2024-09-05
  */
 
 declare(strict_types=1);
@@ -140,7 +140,7 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 			global $wpdb;
 			if ( $post->post_type === $post_type ) {
 				if ( $pass_through ) {
-					$join .= " LEFT JOIN $wpdb->postmeta ON ( p.ID = $wpdb->postmeta.post_id AND wp_postmeta.meta_key = '$meta_key' )";
+					$join .= " LEFT JOIN $wpdb->postmeta ON ( p.ID = $wpdb->postmeta.post_id AND $wpdb->postmeta.meta_key = '$meta_key' )";
 				} else {
 					$join .= " INNER JOIN $wpdb->postmeta ON ( p.ID = $wpdb->postmeta.post_id )";
 				}
@@ -161,9 +161,9 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 				if ( $pass_through ) {
 					if ( ! $m ) {
 						$m     = explode( ' ', $post->post_date )[0];
-						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value > '$m' ) OR ( CAST(wp_postmeta.meta_value AS DATE) IS NULL AND p.post_date > '$post->post_date' ) ) AND", $where ) ?? $where;
+						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value > '$m' ) OR ( CAST($wpdb->postmeta.meta_value AS DATE) IS NULL AND p.post_date > '$post->post_date' ) ) AND", $where ) ?? $where;
 					} else {
-						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value > '$m' ) OR ( CAST(wp_postmeta.meta_value AS DATE) IS NULL AND p.post_date > '$m' ) ) AND", $where ) ?? $where;
+						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value > '$m' ) OR ( CAST($wpdb->postmeta.meta_value AS DATE) IS NULL AND p.post_date > '$m' ) ) AND", $where ) ?? $where;
 					}
 				} else {
 					$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( $wpdb->postmeta.meta_key = '$meta_key' ) AND ( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value > '$m' ) ) AND", $where ) ?? $where;
@@ -197,7 +197,7 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 			global $wpdb;
 			if ( $post->post_type === $post_type ) {
 				if ( $pass_through ) {
-					$join .= " LEFT JOIN $wpdb->postmeta ON ( p.ID = $wpdb->postmeta.post_id AND wp_postmeta.meta_key = '$meta_key' )";
+					$join .= " LEFT JOIN $wpdb->postmeta ON ( p.ID = $wpdb->postmeta.post_id AND $wpdb->postmeta.meta_key = '$meta_key' )";
 				} else {
 					$join .= " INNER JOIN $wpdb->postmeta ON ( p.ID = $wpdb->postmeta.post_id )";
 				}
@@ -218,9 +218,9 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 				if ( $pass_through ) {
 					if ( ! $m ) {
 						$m     = explode( ' ', $post->post_date )[0];
-						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value < '$m' ) OR ( CAST( wp_postmeta.meta_value AS DATE ) IS NULL AND p.post_date < '$post->post_date' ) ) AND", $where ) ?? $where;
+						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value < '$m' ) OR ( CAST( $wpdb->postmeta.meta_value AS DATE ) IS NULL AND p.post_date < '$post->post_date' ) ) AND", $where ) ?? $where;
 					} else {
-						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value < '$m' ) OR ( CAST( wp_postmeta.meta_value AS DATE ) IS NULL AND p.post_date < '$m' ) ) AND", $where ) ?? $where;
+						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value < '$m' ) OR ( CAST( $wpdb->postmeta.meta_value AS DATE ) IS NULL AND p.post_date < '$m' ) ) AND", $where ) ?? $where;
 					}
 				} else {
 					$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( $wpdb->postmeta.meta_key = '$meta_key' ) AND ( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value < '$m' ) ) AND", $where ) ?? $where;
