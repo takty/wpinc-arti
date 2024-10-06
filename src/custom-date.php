@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2024-09-05
+ * @version 2024-10-06
  */
 
 declare(strict_types=1);
@@ -52,19 +52,19 @@ function make_custom_date_sortable( string $post_type, string $slug, string $met
 				if ( ! is_array( $mq ) ) {
 					$mq = array();
 				}
-				$mq[ $mq_key ] = array(
+				$date_mq   = array();
+				$date_mq[] = array(
 					'key'  => $meta_key,
 					'type' => 'date',
 				);
-
 				if ( $pass_through ) {
-					$mq['relation'] = 'OR';
-					$mq[]           = array(
+					$date_mq['relation'] = 'OR';
+					$date_mq[]           = array(
 						'key'     => $meta_key,
 						'compare' => 'NOT EXISTS',
 					);
 				}
-
+				$mq[] = $date_mq;
 				$query->set( 'meta_query', $mq );
 
 				$order = $query->get( 'order', 'DESC' );
@@ -161,9 +161,9 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 				if ( $pass_through ) {
 					if ( ! $m ) {
 						$m     = explode( ' ', $post->post_date )[0];
-						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value > '$m' ) OR ( CAST($wpdb->postmeta.meta_value AS DATE) IS NULL AND p.post_date > '$post->post_date' ) ) AND", $where ) ?? $where;
+						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( CAST( $wpdb->postmeta.meta_value AS DATE ) IS NOT NULL AND $wpdb->postmeta.meta_value > '$m' ) OR ( CAST($wpdb->postmeta.meta_value AS DATE) IS NULL AND p.post_date > '$post->post_date' ) ) AND", $where ) ?? $where;
 					} else {
-						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value > '$m' ) OR ( CAST($wpdb->postmeta.meta_value AS DATE) IS NULL AND p.post_date > '$m' ) ) AND", $where ) ?? $where;
+						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( CAST( $wpdb->postmeta.meta_value AS DATE ) IS NOT NULL AND $wpdb->postmeta.meta_value > '$m' ) OR ( CAST($wpdb->postmeta.meta_value AS DATE) IS NULL AND p.post_date > '$m' ) ) AND", $where ) ?? $where;
 					}
 				} else {
 					$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( $wpdb->postmeta.meta_key = '$meta_key' ) AND ( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value > '$m' ) ) AND", $where ) ?? $where;
@@ -218,9 +218,9 @@ function enable_custom_date_adjacent_post_link( string $post_type, string $meta_
 				if ( $pass_through ) {
 					if ( ! $m ) {
 						$m     = explode( ' ', $post->post_date )[0];
-						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value < '$m' ) OR ( CAST( $wpdb->postmeta.meta_value AS DATE ) IS NULL AND p.post_date < '$post->post_date' ) ) AND", $where ) ?? $where;
+						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( CAST( $wpdb->postmeta.meta_value AS DATE ) IS NOT NULL AND $wpdb->postmeta.meta_value < '$m' ) OR ( CAST( $wpdb->postmeta.meta_value AS DATE ) IS NULL AND p.post_date < '$post->post_date' ) ) AND", $where ) ?? $where;
 					} else {
-						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value < '$m' ) OR ( CAST( $wpdb->postmeta.meta_value AS DATE ) IS NULL AND p.post_date < '$m' ) ) AND", $where ) ?? $where;
+						$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( CAST( $wpdb->postmeta.meta_value AS DATE ) IS NOT NULL AND $wpdb->postmeta.meta_value < '$m' ) OR ( CAST( $wpdb->postmeta.meta_value AS DATE ) IS NULL AND p.post_date < '$m' ) ) AND", $where ) ?? $where;
 					}
 				} else {
 					$where = preg_replace( '/(p.post_date [><] \'.*\') AND/U', "( $wpdb->postmeta.meta_key = '$meta_key' ) AND ( ( $wpdb->postmeta.meta_value = '$m' AND $1 ) OR ( $wpdb->postmeta.meta_value < '$m' ) ) AND", $where ) ?? $where;
