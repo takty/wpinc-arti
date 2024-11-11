@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2024-10-06
+ * @version 2024-11-11
  */
 
 declare(strict_types=1);
@@ -52,8 +52,8 @@ function make_custom_date_sortable( string $post_type, string $slug, string $met
 				if ( ! is_array( $mq ) ) {
 					$mq = array();
 				}
-				$date_mq   = array();
-				$date_mq[] = array(
+				$date_mq            = array();
+				$date_mq[ $mq_key ] = array(
 					'key'  => $meta_key,
 					'type' => 'date',
 				);
