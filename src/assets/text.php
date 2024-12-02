@@ -4,7 +4,7 @@
  *
  * @package Wpinc Post
  * @author Takuto Yanagida
- * @version 2024-03-14
+ * @version 2024-12-02
  */
 
 declare(strict_types=1);
@@ -65,7 +65,7 @@ function separate_text( string $str, array $args = array() ) {
 	}
 
 	$new_ls = null;
-	$lines  = preg_split( '/　　|<\s*br\s*\/?>/ui', $str );
+	$lines  = preg_split( '/　　|<\s*br\s*\/?>|&lt;\s*br\s*\/?>/ui', $str );
 
 	if ( $lines ) {
 		switch ( $args['word'] ) {
